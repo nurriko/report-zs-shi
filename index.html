@@ -65,7 +65,7 @@
 
     <div id="authScreen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md">
         
-        <div id="loginForm" class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 transition-all duration-300">
+        <div id="loginForm" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-[90%] md:w-full max-w-md border border-slate-100 transition-all duration-300">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3"><i class="fas fa-chart-line text-3xl"></i></div>
                 <h1 class="text-2xl font-extrabold text-slate-800">Sistem Terpadu</h1>
@@ -87,7 +87,7 @@
             <div id="loginError" class="hidden mt-4 p-4 rounded-xl text-xs font-bold text-center border shadow-sm transition-all"></div>
         </div>
 
-        <div id="forceChangePassForm" class="hidden bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 transition-all duration-300">
+        <div id="forceChangePassForm" class="hidden bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-[90%] md:w-full max-w-md border border-slate-100 transition-all duration-300">
             <div class="text-center mb-6">
                 <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-exclamation-triangle text-xl"></i></div>
                 <h1 class="text-xl font-extrabold text-slate-800">Buat Password Baru</h1>
@@ -102,7 +102,7 @@
             <div id="forceChangeMsg" class="hidden mt-4 p-3 rounded-lg text-xs font-bold text-center border bg-rose-50 text-rose-600 border-rose-100"></div>
         </div>
 
-        <div id="registerForm" class="hidden bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 transition-all duration-300">
+        <div id="registerForm" class="hidden bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-[90%] md:w-full max-w-md border border-slate-100 transition-all duration-300">
             <div class="text-center mb-6"><h1 class="text-2xl font-extrabold text-slate-800">Daftar Akun</h1></div>
             <form onsubmit="handleAuth(event, 'register')" class="space-y-4">
                 <div class="relative"><i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="regUser" class="w-full bg-slate-50 border border-slate-200 py-3 pl-11 pr-4 rounded-xl text-sm font-bold outline-none" placeholder="Pilih username..." required></div>
@@ -113,7 +113,7 @@
             <div id="regMsg" class="hidden mt-4 p-3 rounded-lg text-xs font-bold text-center border"></div>
         </div>
 
-        <div id="forgotForm" class="hidden bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 transition-all duration-300">
+        <div id="forgotForm" class="hidden bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-[90%] md:w-full max-w-md border border-slate-100 transition-all duration-300">
             <div class="text-center mb-6"><div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-key text-xl"></i></div><h1 class="text-xl font-extrabold text-slate-800">Lupa Password?</h1></div>
             <form onsubmit="handleAuth(event, 'forgot')" class="space-y-4">
                 <div class="relative"><i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="forgotUser" class="w-full bg-slate-50 border border-slate-200 py-3 pl-11 pr-4 rounded-xl text-sm font-bold outline-none" placeholder="Username Anda..." required></div>
@@ -477,7 +477,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ALGORITMA BANTUAN CLOUD (Menghemat Biaya & Mencegah Limit Data 10MB)
         async function saveDocStr(docId, dataArray) {
             await db.collection('appSettings').doc(docId).set({ data: JSON.stringify(dataArray) });
         }
@@ -490,22 +489,19 @@
             return defaultVal;
         }
 
-        // PERBAIKAN: Mengirim data secara satuan agar tidak terkena limit Payload Size 10MB
         async function saveLargeArray(docPrefix, array) {
             const jsonStr = JSON.stringify(array);
-            const chunkSize = 500000; // Pecah jadi 500KB per file untuk keamanan Firebase
+            const chunkSize = 500000; 
             let chunks = [];
             for (let i = 0; i < jsonStr.length; i += chunkSize) {
                 chunks.push(jsonStr.substring(i, i + chunkSize));
             }
             
-            // Hapus data lama
             const oldDocs = await db.collection('appData').where('type', '==', docPrefix).get();
             const deleteBatch = db.batch();
             oldDocs.forEach(doc => deleteBatch.delete(doc.ref));
             await deleteBatch.commit(); 
 
-            // Simpan data baru satu per satu (dicicil) agar tidak menabrak limit
             for(let i = 0; i < chunks.length; i++) {
                 await db.collection('appData').doc(`${docPrefix}_${i}`).set({ 
                     type: docPrefix, 
@@ -590,6 +586,11 @@
             sysActiveYearFilter = await loadDocStr('activeYears', ['ALL']);
             sysInvFileName = await loadDocStr('invFileName', '');
 
+            // AUTO COLLAPSE SIDEBAR UNTUK HP
+            if (window.innerWidth < 768) {
+                document.getElementById('mainSidebar').classList.add('sidebar-collapsed');
+            }
+
             switchAuthView('login');
         }
 
@@ -599,11 +600,10 @@
             loader.classList.remove('hidden');
 
             try {
-                // Load Database Besar dari Firebase
                 rawSalesData = await loadLargeArray('sales');
                 rawTargetData = await loadLargeArray('targets');
                 inventory = await loadLargeArray('inventory');
-            } catch (err) { console.error("Gagal memuat memori browser:", err); }
+            } catch (err) { console.error("Gagal memuat dari Cloud:", err); }
 
             loader.classList.add('hidden');
         }
@@ -622,7 +622,6 @@
             
             sysActiveYearFilter = Array.from(document.querySelectorAll('.year-checkbox:checked')).map(cb => cb.value);
             
-            // Simpan Filter Tahun Ke Cloud
             saveDocStr('activeYears', sysActiveYearFilter);
             
             updateMultiYearText(); if(rawSalesData.length > 0) initSalesUI();
@@ -723,8 +722,9 @@
                 const uInput = document.getElementById('loginUser'), pInput = document.getElementById('loginPass');
                 if (!uInput || !pInput) return;
 
-                const u = uInput.value.trim(), p = pInput.value.trim();
-                const foundUser = dbUsers.find(x => x.username === u);
+                // PERBAIKAN: otomatis diubah ke huruf kecil semua (Case Insensitive)
+                const u = uInput.value.trim().toLowerCase(), p = pInput.value.trim();
+                const foundUser = dbUsers.find(x => x.username.toLowerCase() === u);
                 
                 if (foundUser) {
                     if (foundUser.password === p) {
@@ -744,19 +744,22 @@
             } 
             else if (type === 'register') {
                 const uInput = document.getElementById('regUser'), pInput = document.getElementById('regPass');
-                const u = uInput.value.trim(), p = pInput.value.trim(), msg = document.getElementById('regMsg');
-                if(dbUsers.find(x => x.username === u)) { msg.innerText = "Username sudah digunakan!"; msg.className = "mt-4 p-3 rounded-lg text-xs font-bold text-center border bg-rose-50 text-rose-600 border-rose-100 block"; } 
+                // PERBAIKAN: Simpan dan validasi menggunakan huruf kecil
+                const u = uInput.value.trim().toLowerCase(), p = pInput.value.trim(), msg = document.getElementById('regMsg');
+                if(dbUsers.find(x => x.username.toLowerCase() === u)) { msg.innerText = "Username sudah digunakan!"; msg.className = "mt-4 p-3 rounded-lg text-xs font-bold text-center border bg-rose-50 text-rose-600 border-rose-100 block"; } 
                 else {
                     dbUsers.push({username: u, password: p, role: 'user'}); 
-                    await saveDocStr('users', dbUsers); // Simpan user ke Firebase
+                    await saveDocStr('users', dbUsers); 
                     uInput.value = ''; pInput.value = ''; 
                     msg.innerText = "Registrasi Berhasil! Silakan Login."; msg.className = "mt-4 p-3 rounded-lg text-xs font-bold text-center border bg-emerald-50 text-emerald-600 border-emerald-100 block";
                     setTimeout(() => switchAuthView('login'), 1500);
                 }
             }
             else if (type === 'forgot') {
-                const uInput = document.getElementById('forgotUser'), u = uInput.value.trim(), msg = document.getElementById('forgotMsg');
-                if(dbUsers.find(x => x.username === u)) {
+                const uInput = document.getElementById('forgotUser');
+                // PERBAIKAN: Pastikan input selalu huruf kecil
+                const u = uInput.value.trim().toLowerCase(), msg = document.getElementById('forgotMsg');
+                if(dbUsers.find(x => x.username.toLowerCase() === u)) {
                     if(!resetRequests.includes(u)) { 
                         resetRequests.push(u); 
                         await saveDocStr('resetReqs', resetRequests);
@@ -877,7 +880,6 @@
             XLSX.utils.book_append_sheet(wb, wsSales, "Data Sales"); XLSX.utils.book_append_sheet(wb, wsTarget, "Data Target"); XLSX.writeFile(wb, "Template_Sales_Target_Lengkap.xlsx");
         }
 
-        // PERBAIKAN: Fungsi Handle Excel Upload sudah di-rebuild
         function handleExcelUpload(input) {
             const file = input.files[0]; if(!file) return;
             const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = "Menyinkronkan ke Cloud Firebase..."; loader.classList.remove('hidden');
@@ -1002,7 +1004,6 @@
                         });
 
                         try {
-                            // SIMPAN SEMUA KE CLOUD DENGAN SISTEM CICILAN BARU
                             await saveLargeArray('sales', rawSalesData);
                             await saveLargeArray('targets', rawTargetData);
                             
