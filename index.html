@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Terpadu - Sales & Inventory</title>
+    <title>Report ZS & SHI - Sales & Inventory</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -80,7 +80,7 @@
         <div id="loginForm" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-[90%] md:w-full max-w-md border border-slate-100 transition-all duration-300">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3"><i class="fas fa-chart-line text-3xl"></i></div>
-                <h1 class="text-2xl font-extrabold text-slate-800">Sistem Terpadu</h1>
+                <h1 class="text-2xl font-extrabold text-slate-800">Report ZS & SHI</h1>
                 <p class="text-sm text-slate-500 font-medium mt-1">Silakan masuk ke akun Anda</p>
             </div>
             <form onsubmit="handleAuth(event, 'login')" class="space-y-5">
@@ -1282,7 +1282,6 @@
                             else {
                                 const invMap = new Map();
                                 inventory.forEach((item, idx) => {
-                                    // PERBAIKAN: Pencocokan disamakan menggunakan fullName dan code/SKU
                                     let key = item.code ? `code_${item.code}` : `attr_${item.brand}_${item.fullName}_${item.variant}_${item.condition}`;
                                     invMap.set(key, idx);
                                 });
