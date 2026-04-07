@@ -231,11 +231,32 @@
         
                 <div id="filterArea" class="hidden space-y-6 mb-12">
                     <div class="bg-white/50 p-6 rounded-[32px] border border-white shadow-sm space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
                             <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pilih Brand</p><div id="brandList" class="flex flex-wrap gap-2"></div></div>
-                            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Koleksi</p><select id="collectionSelect" onchange="applySalesFilter('collection', this.value)" class="custom-select w-full bg-white border border-slate-200 py-3 px-4 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all"></select></div>
-                            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pilih Tahun</p><select id="yearSelect" onchange="applySalesFilter('year', this.value)" class="custom-select w-full bg-white border border-slate-200 py-3 px-4 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all"></select></div>
-                            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pilih Bulan</p><select id="monthSelect" onchange="applySalesFilter('month', this.value)" class="custom-select w-full bg-white border border-slate-200 py-3 px-4 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all"></select></div>
+                            
+                            <div class="relative w-full z-40">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Koleksi</p>
+                                <button id="multiColSalesBtn" onclick="toggleSalesDropdown(event, 'multiColSalesDropdown')" class="w-full text-left px-4 py-3 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all flex justify-between items-center">
+                                    <span id="multiColSalesText" class="truncate text-slate-600">Semua Koleksi</span><i class="fas fa-chevron-down text-slate-400"></i>
+                                </button>
+                                <div id="multiColSalesDropdown" class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-64 overflow-y-auto flex flex-col py-1"></div>
+                            </div>
+
+                            <div class="relative w-full z-30">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pilih Tahun</p>
+                                <button id="multiYearSalesBtn" onclick="toggleSalesDropdown(event, 'multiYearSalesDropdown')" class="w-full text-left px-4 py-3 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all flex justify-between items-center">
+                                    <span id="multiYearSalesText" class="truncate text-slate-600">Semua Tahun</span><i class="fas fa-chevron-down text-slate-400"></i>
+                                </button>
+                                <div id="multiYearSalesDropdown" class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-64 overflow-y-auto flex flex-col py-1"></div>
+                            </div>
+
+                            <div class="relative w-full z-20">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pilih Bulan</p>
+                                <button id="multiMonthSalesBtn" onclick="toggleSalesDropdown(event, 'multiMonthSalesDropdown')" class="w-full text-left px-4 py-3 border border-slate-200 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all flex justify-between items-center">
+                                    <span id="multiMonthSalesText" class="truncate text-slate-600">Semua Bulan</span><i class="fas fa-chevron-down text-slate-400"></i>
+                                </button>
+                                <div id="multiMonthSalesDropdown" class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-64 overflow-y-auto flex flex-col py-1"></div>
+                            </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4">
                             <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Channel Sales</p><div id="sourceList" class="flex flex-wrap gap-2"></div></div>
@@ -260,7 +281,7 @@
                 <div id="targetSection" class="glass-card p-8 mb-8 hidden">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                         <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Target vs Achievement</h3>
-                        <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100"><p class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Target Period (Filtered)</p><p id="targetDisplay" class="text-lg font-black text-indigo-600">Rp 0</p></div>
+                        <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100"><p id="targetPeriodLabel" class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Target Period (Filtered)</p><p id="targetDisplay" class="text-lg font-black text-indigo-600">Rp 0</p></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                         <div class="space-y-6">
@@ -281,10 +302,18 @@
                         <div class="grid grid-cols-2 gap-4 mb-6 pointer-events-none"><div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100"><p class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Total Source Revenue</p><p id="sourceTotalRev" class="text-lg font-extrabold text-indigo-600">Rp 0</p></div><div class="bg-slate-50 p-4 rounded-2xl border border-slate-100"><p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Source Qty</p><p id="sourceTotalQty" class="text-lg font-extrabold text-slate-800">0 <span class="text-xs font-normal">pcs</span></p></div></div>
                         <div style="height: 350px;"><canvas id="sourceChart"></canvas></div>
                     </div>
-                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] hover:border-indigo-300" onclick="handleCardClick(event, 'qty')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Top 5 Baju (High Demand)</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div><div style="height: 350px;"><canvas id="qtyChart"></canvas></div></div>
+                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'qty')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Top 5 Baju (High Demand)</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div><div style="height: 350px;"><canvas id="qtyChart"></canvas></div></div>
                     <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'rev')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Top 5 Baju (High Revenue)</h3><span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div><div style="height: 350px;"><canvas id="revChart"></canvas></div></div>
                     <div id="collectionSection" class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.3)] hover:border-pink-300" onclick="handleCardClick(event, 'collection')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Top 5 Koleksi</h3><span class="text-[10px] bg-pink-50 text-pink-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-pink-600 group-hover:text-white transition-colors shadow-sm">Detail Varian</span></div><div style="height: 350px;"><canvas id="collectionChart"></canvas></div></div>
-                    <div id="customerSection" class="glass-card p-8 lg:col-span-1" style="display: none;"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Top 5 Mitra City</h3><div style="height: 350px;"><canvas id="customerChart"></canvas></div></div>
+                    
+                    <div id="customerSection" class="glass-card cursor-pointer p-8 lg:col-span-1 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(245,158,11,0.3)] hover:border-orange-300" onclick="handleCardClick(event, 'customer')" style="display: none;">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Top 5 Mitra City</h3>
+                            <span class="text-[10px] bg-orange-50 text-orange-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors shadow-sm">Lihat Semua</span>
+                        </div>
+                        <div style="height: 350px;"><canvas id="customerChart"></canvas></div>
+                    </div>
+                    
                     <div id="trendSection" class="glass-card p-8 lg:col-span-2"><h3 id="trendTitle" class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Sales Trend Analysis</h3><div style="height: 400px;"><canvas id="trendChart"></canvas></div></div>
                 </div>
             </div>
@@ -617,7 +646,10 @@
         let workingTargetData = [];
         let salesCharts = {};
         let currentSalesFilteredData = []; 
-        let cBrand = 'ALL', cSource = 'ALL', cBazaar = 'ALL', cMonth = 'ALL', cYear = 'ALL', cCollection = 'ALL';
+        let cBrand = 'ALL', cSource = 'ALL', cBazaar = 'ALL';
+        // Multi-select variables initialized as arrays
+        let cMonth = ['ALL'], cYear = ['ALL'], cCollection = ['ALL'];
+        
         let globalSalesTarget = 0;
         let sysActiveYearFilter = [];
         let sysInvFileName = "";
@@ -640,6 +672,15 @@
             
             const yearDropdown = document.getElementById('multiYearDropdown'), yearBtn = document.getElementById('multiYearBtn');
             if (yearDropdown && yearBtn && !yearDropdown.contains(e.target) && !yearBtn.contains(e.target)) { yearDropdown.classList.add('hidden'); }
+
+            // Click listener untuk dropdown sales
+            ['Col', 'Year', 'Month'].forEach(type => {
+                const drop = document.getElementById(`multi${type}SalesDropdown`);
+                const btn = document.getElementById(`multi${type}SalesBtn`);
+                if (drop && btn && !drop.contains(e.target) && !btn.contains(e.target)) {
+                    drop.classList.add('hidden');
+                }
+            });
         });
 
         async function initApp() {
@@ -679,6 +720,8 @@
         document.addEventListener('DOMContentLoaded', initApp);
 
         function toggleYearMultiSelect(e) { e.stopPropagation(); document.getElementById('multiYearDropdown').classList.toggle('hidden'); }
+        
+        function toggleSalesDropdown(e, id) { e.stopPropagation(); document.getElementById(id).classList.toggle('hidden'); }
 
         async function handleYearCheckboxChange(elem) {
             const checkboxes = document.querySelectorAll('.year-checkbox');
@@ -852,7 +895,8 @@
         }
 
         function setupDashboardForUser() {
-            const isAdm = currentUser.role === 'admin', displayName = isAdm ? 'Riko' : currentUser.username; 
+            const isAdm = currentUser.role === 'admin';
+            const displayName = isAdm ? 'Riko' : currentUser.username; // Displaying actual Name from User Profile if admin
             document.getElementById('profileName').innerText = displayName;
             document.getElementById('profileRole').innerText = isAdm ? 'Administrator' : 'User Standard';
             document.getElementById('profileIcon').innerText = displayName.charAt(0).toUpperCase();
@@ -1101,30 +1145,89 @@
                 document.getElementById('salesStatus').innerHTML = `Database Sales: <span class="text-emerald-500 font-extrabold">✅ ${workingSalesData.length.toLocaleString('id-ID')} baris</span>`;
                 document.getElementById('targetStatus').innerHTML = `Database Target: <span class="text-emerald-500 font-extrabold">${workingTargetData.length > 0 ? '✅ '+workingTargetData.length.toLocaleString('id-ID')+' baris' : '❌ Kosong'}</span>`;
                 document.getElementById('filterArea').classList.remove('hidden'); document.getElementById('targetSection').classList.remove('hidden'); document.getElementById('chartsArea').style.display = 'grid';
-                cBrand = 'ALL'; cSource = 'ALL'; cBazaar = 'ALL'; cMonth = 'ALL'; cYear = 'ALL'; cCollection = 'ALL';
+                
+                // Reset states
+                cBrand = 'ALL'; cSource = 'ALL'; cBazaar = 'ALL'; 
+                cMonth = ['ALL']; cYear = ['ALL']; cCollection = ['ALL'];
+                
                 updateSalesDateRange(); renderSalesFilterButtons(); updateSalesDashboard();
             } else {
                 document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none';
             }
         }
 
+        function handleSalesMulti(type, elem) {
+            const container = document.getElementById(`multi${type}SalesDropdown`);
+            const checkboxes = container.querySelectorAll('.multi-checkbox');
+            if(elem.value === 'ALL' && elem.checked) {
+                checkboxes.forEach(cb => { if(cb.value !== 'ALL') cb.checked = false; });
+            } else if (elem.checked) {
+                const allCb = container.querySelector('.multi-checkbox[value="ALL"]');
+                if(allCb) allCb.checked = false;
+            }
+            const checkedBoxes = container.querySelectorAll('.multi-checkbox:checked');
+            if(checkedBoxes.length === 0) {
+                const allCb = container.querySelector('.multi-checkbox[value="ALL"]');
+                if(allCb) allCb.checked = true;
+            }
+
+            const selectedVals = Array.from(container.querySelectorAll('.multi-checkbox:checked')).map(cb => cb.value);
+            if(type === 'Col') cCollection = selectedVals;
+            else if(type === 'Year') { cYear = selectedVals; cMonth = ['ALL']; } 
+            else if(type === 'Month') cMonth = selectedVals;
+
+            updateSalesMultiText(type);
+            if(type === 'Year') renderSalesFilterButtons(); // re-render month dropdown correctly
+            updateSalesDashboard();
+        }
+
+        function updateSalesMultiText(type) {
+            let vals = []; let textElem = null; let defaultText = '';
+            if(type === 'Col') { vals = cCollection; textElem = document.getElementById('multiColSalesText'); defaultText = 'Semua Koleksi'; }
+            if(type === 'Year') { vals = cYear; textElem = document.getElementById('multiYearSalesText'); defaultText = 'Semua Tahun'; }
+            if(type === 'Month') { vals = cMonth; textElem = document.getElementById('multiMonthSalesText'); defaultText = 'Semua Bulan'; }
+            
+            if (!textElem) return;
+
+            if(vals.includes('ALL')) { textElem.innerText = defaultText; }
+            else if (vals.length === 1) { textElem.innerText = vals[0]; }
+            else { textElem.innerText = `${vals.length} Dipilih`; }
+        }
+
         function renderSalesFilterButtons() {
             const getUnique = (key) => ['ALL', ...new Set(workingSalesData.map(r => String(r[key] || '').trim()))].filter(v => v !== 'undefined' && v !== '');
             document.getElementById('brandList').innerHTML = getUnique('Brand').map(b => `<button onclick="applySalesFilter('brand','${b}')" class="filter-btn ${b===cBrand?'active':''}">${b}</button>`).join('');
-            document.getElementById('collectionSelect').innerHTML = getUnique('Koleksi').map(k => `<option value="${k}" ${k===cCollection?'selected':''}>${k === 'ALL' ? '--- Semua Koleksi ---' : k}</option>`).join('');
+            
+            // Render Multi Koleksi
+            const cols = getUnique('Koleksi');
+            let colHtml = `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 font-bold transition-colors"><input type="checkbox" value="ALL" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Col', this)" ${cCollection.includes('ALL') ? 'checked' : ''}> <span class="text-xs">Semua Koleksi</span></label>`;
+            cols.filter(c => c !== 'ALL').forEach(c => { colHtml += `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs font-medium text-slate-700 transition-colors"><input type="checkbox" value="${c}" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Col', this)" ${cCollection.includes(c) ? 'checked' : ''}> <span class="truncate">${c}</span></label>`; });
+            document.getElementById('multiColSalesDropdown').innerHTML = colHtml;
+            updateSalesMultiText('Col');
+
+            // Render Multi Tahun
             const years = ['ALL', ...new Set(workingSalesData.map(r => getYear(r.Tanggal)).filter(y => y !== null))].sort().reverse();
-            document.getElementById('yearSelect').innerHTML = years.map(y => `<option value="${y}" ${y===cYear?'selected':''}>${y === 'ALL' ? '--- Semua Tahun ---' : y}</option>`).join('');
-            let monthData = cYear !== 'ALL' ? workingSalesData.filter(r => getYear(r.Tanggal) === cYear) : workingSalesData;
+            let yearHtml = `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 font-bold transition-colors"><input type="checkbox" value="ALL" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Year', this)" ${cYear.includes('ALL') ? 'checked' : ''}> <span class="text-xs">Semua Tahun</span></label>`;
+            years.filter(y => y !== 'ALL').forEach(y => { yearHtml += `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs font-medium text-slate-700 transition-colors"><input type="checkbox" value="${y}" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Year', this)" ${cYear.includes(y) ? 'checked' : ''}> <span class="truncate">${y}</span></label>`; });
+            document.getElementById('multiYearSalesDropdown').innerHTML = yearHtml;
+            updateSalesMultiText('Year');
+
+            // Render Multi Bulan
+            let monthData = !cYear.includes('ALL') ? workingSalesData.filter(r => cYear.includes(getYear(r.Tanggal))) : workingSalesData;
             const monthsInYear = ['ALL', ...new Set(monthData.map(r => getMonthName(r.Tanggal)).filter(m => m !== null))].sort((a, b) => monthNames.indexOf(a) - monthNames.indexOf(b));
-            document.getElementById('monthSelect').innerHTML = monthsInYear.map(m => `<option value="${m}" ${m===cMonth?'selected':''}>${m === 'ALL' ? '--- Semua Bulan ---' : m}</option>`).join('');
+            let monthHtml = `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 font-bold transition-colors"><input type="checkbox" value="ALL" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Month', this)" ${cMonth.includes('ALL') ? 'checked' : ''}> <span class="text-xs">Semua Bulan</span></label>`;
+            monthsInYear.filter(m => m !== 'ALL').forEach(m => { monthHtml += `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs font-medium text-slate-700 transition-colors"><input type="checkbox" value="${m}" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Month', this)" ${cMonth.includes(m) ? 'checked' : ''}> <span class="truncate">${m}</span></label>`; });
+            document.getElementById('multiMonthSalesDropdown').innerHTML = monthHtml;
+            updateSalesMultiText('Month');
+
             document.getElementById('sourceList').innerHTML = getUnique('Source').map(s => `<button onclick="applySalesFilter('source','${s}')" class="filter-btn ${s===cSource?'active':''}">${s}</button>`).join('');
             
             const bazaarArea = document.getElementById('bazaarDropdownArea');
             if (cSource === 'BAZAAR') { 
                 bazaarArea.classList.remove('hidden');
                 let validBazaarData = workingSalesData.filter(r => String(r.Source) === 'BAZAAR');
-                if (cYear !== 'ALL') validBazaarData = validBazaarData.filter(r => getYear(r.Tanggal) === cYear);
-                if (cMonth !== 'ALL') validBazaarData = validBazaarData.filter(r => getMonthName(r.Tanggal) === cMonth);
+                if (!cYear.includes('ALL')) validBazaarData = validBazaarData.filter(r => cYear.includes(getYear(r.Tanggal)));
+                if (!cMonth.includes('ALL')) validBazaarData = validBazaarData.filter(r => cMonth.includes(getMonthName(r.Tanggal)));
                 if (cBrand !== 'ALL') validBazaarData = validBazaarData.filter(r => r.Brand === cBrand);
                 const bazaarTags = ['ALL', ...new Set(validBazaarData.map(r => String(r['Sales Tag'] || '').trim()))].filter(v => v !== '');
                 if (cBazaar !== 'ALL' && !bazaarTags.includes(cBazaar)) cBazaar = 'ALL';
@@ -1134,9 +1237,6 @@
 
         function applySalesFilter(type, val) { 
             if(type === 'brand') cBrand = val; 
-            else if(type === 'collection') cCollection = val;
-            else if(type === 'year') { cYear = val; cMonth = 'ALL'; }
-            else if(type === 'month') cMonth = val;
             else if(type === 'source') { cSource = val; cBazaar = 'ALL'; } 
             renderSalesFilterButtons(); updateSalesDashboard(); 
         }
@@ -1145,28 +1245,47 @@
 
         function calculateGrowthUI(current, prev, elementId, prevYearLabel) {
             const el = document.getElementById(elementId), iconEl = document.getElementById(elementId + 'Icon'), txtEl = document.getElementById(elementId === 'qtyGrowth' ? 'qtyCompareText' : 'revCompareText');
-            if (prev === 0) { el.innerText = "New Record"; el.className = "text-3xl font-black mt-1 text-indigo-500"; txtEl.innerText = `Tidak ada data pada ${cMonth} ${prevYearLabel}`; iconEl.innerHTML = `🌟`; iconEl.className = "p-4 rounded-2xl bg-indigo-50 text-2xl"; return; }
+            if (prev === 0) { el.innerText = "New Record"; el.className = "text-3xl font-black mt-1 text-indigo-500"; txtEl.innerText = `Tidak ada data pada periode ${prevYearLabel}`; iconEl.innerHTML = `🌟`; iconEl.className = "p-4 rounded-2xl bg-indigo-50 text-2xl"; return; }
             const percent = ((current - prev) / prev) * 100, isPositive = percent >= 0;
             el.innerText = `${isPositive ? '+' : ''}${percent.toFixed(1)}%`; el.className = `text-3xl font-black mt-1 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`;
-            txtEl.innerText = `vs ${Math.round(prev).toLocaleString('id-ID')} pada ${cMonth} ${prevYearLabel}`;
+            txtEl.innerText = `vs ${Math.round(prev).toLocaleString('id-ID')} pada periode ${prevYearLabel}`;
             iconEl.innerHTML = isPositive ? `<svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-9 9-4-4-6 6"></path></svg>` : `<svg class="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 17h8m0 0v-8m0 8l-9-9-4 4-6-6"></path></svg>`;
             iconEl.className = `p-4 rounded-2xl ${isPositive ? 'bg-emerald-50' : 'bg-rose-50'}`;
         }
 
         function updateSalesDashboard() {
-            let filtered = workingSalesData.filter(r => (cBrand === 'ALL' || r.Brand === cBrand) && (cCollection === 'ALL' || r.Koleksi === cCollection) && (cSource === 'ALL' || r.Source === cSource) && (cBazaar === 'ALL' || r['Sales Tag'] === cBazaar) && (cYear === 'ALL' || getYear(r.Tanggal) === cYear) && (cMonth === 'ALL' || getMonthName(r.Tanggal) === cMonth));
+            let filtered = workingSalesData.filter(r => 
+                (cBrand === 'ALL' || r.Brand === cBrand) && 
+                (cCollection.includes('ALL') || cCollection.includes(r.Koleksi)) && 
+                (cSource === 'ALL' || r.Source === cSource) && 
+                (cBazaar === 'ALL' || r['Sales Tag'] === cBazaar) && 
+                (cYear.includes('ALL') || cYear.includes(getYear(r.Tanggal))) && 
+                (cMonth.includes('ALL') || cMonth.includes(getMonthName(r.Tanggal)))
+            );
             currentSalesFilteredData = filtered;
 
-            if (cYear !== 'ALL' && cMonth !== 'ALL') {
-                const lastYear = (parseInt(cYear) - 1).toString();
-                let prevYearData = workingSalesData.filter(r => getYear(r.Tanggal) === lastYear && getMonthName(r.Tanggal) === cMonth && (cBrand === 'ALL' || r.Brand === cBrand) && (cSource === 'ALL' || r.Source === cSource));
-                calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), 'qtyGrowth', lastYear);
-                calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), 'revGrowth', lastYear);
+            // Growth calculation only makes sense if single year & single month selected
+            if (cYear.length === 1 && cYear[0] !== 'ALL' && cMonth.length === 1 && cMonth[0] !== 'ALL') {
+                const lastYear = (parseInt(cYear[0]) - 1).toString();
+                let prevYearData = workingSalesData.filter(r => getYear(r.Tanggal) === lastYear && getMonthName(r.Tanggal) === cMonth[0] && (cBrand === 'ALL' || r.Brand === cBrand) && (cSource === 'ALL' || r.Source === cSource));
+                calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), 'qtyGrowth', `${cMonth[0]} ${lastYear}`);
+                calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), 'revGrowth', `${cMonth[0]} ${lastYear}`);
                 document.getElementById('growthSection').classList.remove('hidden');
             } else { document.getElementById('growthSection').classList.add('hidden'); }
 
-            let filteredTarget = workingTargetData.filter(t => (cBrand === 'ALL' || String(t.Brand||'').trim() === cBrand) && (cYear === 'ALL' || String(t.Tahun||'').trim() === cYear) && (cMonth === 'ALL' || String(t.Bulan||'').trim().toUpperCase() === cMonth.toUpperCase()) && (cSource === 'ALL' || String(t.Source||'').trim() === cSource));
+            let filteredTarget = workingTargetData.filter(t => 
+                (cBrand === 'ALL' || String(t.Brand||'').trim() === cBrand) && 
+                (cYear.includes('ALL') || cYear.includes(String(t.Tahun).trim())) && 
+                (cMonth.includes('ALL') || cMonth.includes(String(t.Bulan).trim().toUpperCase())) && 
+                (cSource === 'ALL' || String(t.Source||'').trim() === cSource)
+            );
             globalSalesTarget = filteredTarget.reduce((sum, t) => sum + (parseFloat(t.Target) || 0), 0);
+            
+            // Deteksi jika Tahun dipilih tapi Bulan dibiarkan (Target Tahunan)
+            let isAnnual = (cYear.length > 0 && !cYear.includes('ALL')) && cMonth.includes('ALL');
+            const targetLabelEl = document.getElementById('targetPeriodLabel');
+            if (targetLabelEl) targetLabelEl.innerText = isAnnual ? "Target Setahun (Tahunan)" : "Target Period (Filtered)";
+
             document.getElementById('targetDisplay').innerText = formatRupiah(globalSalesTarget);
 
             let agg = { products: {}, collections: {}, brands: {}, customers: {}, sources: {}, timeline: {}, monthlyTrend: {}, allTimeTrend: {} };
@@ -1186,12 +1305,12 @@
                 if(!agg.brands[brand]) agg.brands[brand] = {q:0, r:0}; agg.brands[brand].q += qty; agg.brands[brand].r += rev;
                 const cust = r['Nama Customer'] || 'N/A'; if(!agg.customers[cust]) agg.customers[cust] = {q:0, r:0}; agg.customers[cust].q += qty; agg.customers[cust].r += rev;
             });
-            renderSalesCharts(agg);
+            renderSalesCharts(agg, isAnnual);
         }
 
         function handleCardClick(event, type) { if (event.target.tagName.toLowerCase() !== 'canvas') openSalesModal(type); }
 
-        function renderSalesCharts(agg) {
+        function renderSalesCharts(agg, isAnnual) {
             Object.values(salesCharts).forEach(c => c.destroy());
             const getSortedTop = (data, sortBy = 'q', limit = 5) => Object.entries(data).sort((a,b) => b[1][sortBy] - a[1][sortBy]).slice(0, limit);
             const dualBarOps = (fullLabels, chartTypeForModal) => ({ indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 70 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: (items) => getOnlyName(fullLabels[items[0].dataIndex]), label: (ctx) => [`Qty: ${ctx.parsed.x} pcs`, `Revenue: ${ctx.dataset.revenueData ? formatRupiah(ctx.dataset.revenueData[ctx.dataIndex]) : ''}`] } }, datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#475569', font: { weight: '800', size: 11 }, formatter: v => v + ' pcs', clip: false } }, scales: { x: { display: false, grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } }, onClick: (e, elements, chart) => { if (elements.length > 0 && chartTypeForModal) openSalesModal(chartTypeForModal, fullLabels[elements[0].index]); } });
@@ -1203,16 +1322,22 @@
             document.getElementById('achievedRev').innerText = formatRupiah(currentTotalRevenue); 
             document.getElementById('achievedPercent').innerText = `${percentage.toFixed(1)}%`;
             const gapEl = document.getElementById('gapRev'), gapTextEl = document.getElementById('gapText');
-            if (gap > 0) { gapEl.innerText = `- ${formatRupiah(gap)}`; gapEl.className = "text-xl font-bold text-rose-500"; gapTextEl.innerText = "Ayo push lagi! Masih kurang segini."; } else { gapEl.innerText = `+ ${formatRupiah(Math.abs(gap))}`; gapEl.className = "text-xl font-bold text-emerald-500"; gapTextEl.innerText = "Luar biasa! Target sudah terlampaui."; }
+            if (gap > 0) { 
+                gapEl.innerText = `- ${formatRupiah(gap)}`; gapEl.className = "text-xl font-bold text-rose-500"; 
+                gapTextEl.innerText = isAnnual ? "Ayo push lagi! Masih kurang untuk capai target setahun." : "Ayo push lagi! Masih kurang segini."; 
+            } else { 
+                gapEl.innerText = `+ ${formatRupiah(Math.abs(gap))}`; gapEl.className = "text-xl font-bold text-emerald-500"; 
+                gapTextEl.innerText = "Luar biasa! Target sudah terlampaui."; 
+            }
 
             salesCharts.target = new Chart(document.getElementById('targetChart'), { type: 'doughnut', data: { labels: ['Achieved', 'Remaining'], datasets: [{ data: [currentTotalRevenue, gap > 0 ? gap : 0], backgroundColor: [percentage >= 100 ? '#10b981' : '#6366f1', '#e2e8f0'], borderWidth: 0, circumference: 180, rotation: 270, cutout: '80%', borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { display: false } } } });
 
             const t5q = getSortedTop(agg.products, 'q'); salesCharts.qty = new Chart(document.getElementById('qtyChart'), { type: 'bar', data: { labels: t5q.map(x => limitWords(x[0])), datasets: [{ data: t5q.map(x=>x[1].q), revenueData: t5q.map(x=>x[1].r), backgroundColor: '#6366f1', borderRadius: 10, clip: false }] }, options: dualBarOps(t5q.map(x=>x[0]), 'qty') });
             const t5r = getSortedTop(agg.products, 'r'); salesCharts.rev = new Chart(document.getElementById('revChart'), { type: 'bar', data: { labels: t5r.map(x => limitWords(x[0])), datasets: [{ data: t5r.map(x=>x[1].q), revenueData: t5r.map(x=>x[1].r), backgroundColor: '#10b981', borderRadius: 10, clip: false }] }, options: dualBarOps(t5r.map(x=>x[0]), 'rev') });
 
-            if(cCollection === 'ALL') { document.getElementById('collectionSection').style.display = 'block'; const t5coll = getSortedTop(agg.collections, 'q'); salesCharts.collection = new Chart(document.getElementById('collectionChart'), { type: 'bar', data: { labels: t5coll.map(x => x[0]), datasets: [{ data: t5coll.map(x=>x[1].q), revenueData: t5coll.map(x=>x[1].r), backgroundColor: '#ec4899', borderRadius: 10, clip: false }] }, options: dualBarOps(t5coll.map(x=>x[0]), 'collection') }); } else { document.getElementById('collectionSection').style.display = 'none'; }
+            if(cCollection.includes('ALL')) { document.getElementById('collectionSection').style.display = 'block'; const t5coll = getSortedTop(agg.collections, 'q'); salesCharts.collection = new Chart(document.getElementById('collectionChart'), { type: 'bar', data: { labels: t5coll.map(x => x[0]), datasets: [{ data: t5coll.map(x=>x[1].q), revenueData: t5coll.map(x=>x[1].r), backgroundColor: '#ec4899', borderRadius: 10, clip: false }] }, options: dualBarOps(t5coll.map(x=>x[0]), 'collection') }); } else { document.getElementById('collectionSection').style.display = 'none'; }
             
-            if(cCollection === 'ALL' && cBrand === 'ALL') { document.getElementById('marketShareCard').style.display = 'block'; const bData = Object.entries(agg.brands); const totalRevenueAllBrands = bData.reduce((sum, item) => sum + item[1].r, 0); salesCharts.pie = new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: bData.map(x=>x[0]), datasets: [{ data: bData.map(x=>x[1].r), backgroundColor: brandColors, hoverOffset: 15 }] }, options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11, weight: '700' } } }, datalabels: { color: '#fff', font: { weight: '800' }, formatter: (v) => ((v/totalRevenueAllBrands)*100).toFixed(1) + "%" } } }, plugins: [{ id: 'centerTextMarket', beforeDraw: function(chart) { const width = chart.width, height = chart.height, ctx = chart.ctx; ctx.restore(); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "800 10px Plus Jakarta Sans"; ctx.fillStyle = "#94a3b8"; ctx.fillText("TOTAL REVENUE", width / 2, (height / 2) - 15); ctx.font = "800 16px Plus Jakarta Sans"; ctx.fillStyle = "#1e293b"; ctx.fillText(formatRupiah(totalRevenueAllBrands), width / 2, (height / 2) + 10); ctx.save(); } }] }); } else { document.getElementById('marketShareCard').style.display = 'none'; }
+            if(cCollection.includes('ALL') && cBrand === 'ALL') { document.getElementById('marketShareCard').style.display = 'block'; const bData = Object.entries(agg.brands); const totalRevenueAllBrands = bData.reduce((sum, item) => sum + item[1].r, 0); salesCharts.pie = new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: bData.map(x=>x[0]), datasets: [{ data: bData.map(x=>x[1].r), backgroundColor: brandColors, hoverOffset: 15 }] }, options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11, weight: '700' } } }, datalabels: { color: '#fff', font: { weight: '800' }, formatter: (v) => ((v/totalRevenueAllBrands)*100).toFixed(1) + "%" } } }, plugins: [{ id: 'centerTextMarket', beforeDraw: function(chart) { const width = chart.width, height = chart.height, ctx = chart.ctx; ctx.restore(); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "800 10px Plus Jakarta Sans"; ctx.fillStyle = "#94a3b8"; ctx.fillText("TOTAL REVENUE", width / 2, (height / 2) - 15); ctx.font = "800 16px Plus Jakarta Sans"; ctx.fillStyle = "#1e293b"; ctx.fillText(formatRupiah(totalRevenueAllBrands), width / 2, (height / 2) + 10); ctx.save(); } }] }); } else { document.getElementById('marketShareCard').style.display = 'none'; }
 
             if (cSource === 'ALL') {
                 document.getElementById('sourceSection').style.display = 'block'; const sData = Object.entries(agg.sources).sort((a, b) => b[1].r - a[1].r); const totalRev = sData.reduce((sum, item) => sum + item[1].r, 0), totalQty = sData.reduce((sum, item) => sum + item[1].q, 0);
@@ -1220,10 +1345,12 @@
                 salesCharts.source = new Chart(document.getElementById('sourceChart'), { type: 'bar', data: { labels: sData.map(x => x[0]), datasets: [{ data: sData.map(x => x[1].r), qtyData: sData.map(x => x[1].q), backgroundColor: '#8b5cf6', borderRadius: 12, barThickness: 25 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 100 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => [` Revenue: ${formatRupiah(ctx.parsed.x)}`, ` Quantity: ${ctx.dataset.qtyData[ctx.dataIndex]} pcs`] } }, datalabels: { anchor: 'end', align: 'right', offset: 8, color: '#1e293b', font: { weight: '800', size: 10 }, formatter: (v) => formatRupiah(v) } }, scales: { x: { display: false, grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { weight: '800', size: 11 } } } }, onClick: (e, elements, chart) => { if (elements.length > 0) openSalesModal('source', sData[elements[0].index][0]); } } });
             } else { document.getElementById('sourceSection').style.display = 'none'; }
 
-            if(['MITRA', 'RESELLER'].includes(cSource)) { document.getElementById('customerSection').style.display = 'block'; const t5cust = getSortedTop(agg.customers, 'q'); salesCharts.customer = new Chart(document.getElementById('customerChart'), { type: 'bar', data: { labels: t5cust.map(x => extractCity(x[0])), datasets: [{ data: t5cust.map(x=>x[1].q), revenueData: t5cust.map(x=>x[1].r), backgroundColor: '#f59e0b', borderRadius: 10, clip: false }] }, options: dualBarOps(t5cust.map(x=>x[0]), null) }); } else { document.getElementById('customerSection').style.display = 'none'; }
+            if(['MITRA', 'RESELLER'].includes(cSource)) { document.getElementById('customerSection').style.display = 'block'; const t5cust = getSortedTop(agg.customers, 'q'); salesCharts.customer = new Chart(document.getElementById('customerChart'), { type: 'bar', data: { labels: t5cust.map(x => extractCity(x[0])), datasets: [{ data: t5cust.map(x=>x[1].q), revenueData: t5cust.map(x=>x[1].r), backgroundColor: '#f59e0b', borderRadius: 10, clip: false }] }, options: dualBarOps(t5cust.map(x=>x[0]), 'customer') }); } else { document.getElementById('customerSection').style.display = 'none'; }
 
             let trendData = []; const titleEl = document.getElementById('trendTitle');
-            if (cYear === 'ALL') { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Monthly Performance (Filtered)`; trendData = Object.entries(agg.allTimeTrend).sort((a, b) => b[1].q - a[1].q).slice(0, 10); } else if (cMonth === 'ALL') { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Monthly Sales Trend (${cYear})`; trendData = monthNames.filter(m => agg.monthlyTrend[m]).map(m => [m, agg.monthlyTrend[m]]); } else { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Daily Sales Trend (${cMonth} ${cYear})`; trendData = Object.entries(agg.timeline).sort((a, b) => b[1].q - a[1].q).slice(0, 10).sort((a, b) => a[0].localeCompare(b[0])); }
+            if (cYear.includes('ALL')) { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Monthly Performance (Filtered)`; trendData = Object.entries(agg.allTimeTrend).sort((a, b) => b[1].q - a[1].q).slice(0, 10); } 
+            else if (cMonth.includes('ALL')) { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Monthly Sales Trend (Filtered)`; trendData = monthNames.filter(m => agg.monthlyTrend[m]).map(m => [m, agg.monthlyTrend[m]]); } 
+            else { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Daily Sales Trend (Filtered)`; trendData = Object.entries(agg.timeline).sort((a, b) => b[1].q - a[1].q).slice(0, 10).sort((a, b) => a[0].localeCompare(b[0])); }
 
             salesCharts.trend = new Chart(document.getElementById('trendChart'), { type: 'bar', data: { labels: trendData.map(x => x[0]), datasets: [ { label: 'Qty', data: trendData.map(x => x[1].q), backgroundColor: 'rgba(99, 102, 241, 0.1)', borderColor: '#6366f1', borderWidth: 2, borderRadius: 6, yAxisID: 'y', datalabels: { display: true, align: 'end', anchor: 'end', offset: -5, backgroundColor: '#fff', borderColor: '#6366f1', borderWidth: 1.5, borderRadius: 6, padding: 6, color: '#6366f1', font: { weight: 'bold', size: 10 }, formatter: v => v }, clip: false }, { label: 'Rev', data: trendData.map(x => x[1].r), type: 'line', borderColor: '#ec4899', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#ec4899', pointRadius: 5, yAxisID: 'y1', tension: 0.4, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, layout: { padding: { top: 40, left: 10, right: 10, bottom: 0 } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true } }, tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#1e293b', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, callbacks: { label: (ctx) => ctx.datasetIndex === 1 ? `Revenue: ${formatRupiah(ctx.raw)}` : `Terjual: ${ctx.raw} pcs` } } }, scales: { x: { grid: { display: false, drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8' } }, y: { display: false, grid: { display: false } }, y1: { display: false, grid: { display: false } } } } });
         }
@@ -1238,6 +1365,7 @@
             else if (type === 'rev') { title.innerText = 'Top 10 Baju (Berdasarkan Total Revenue)'; controls.classList.add('hidden'); renderSalesModalTable('rev'); }
             else if (type === 'collection') { title.innerText = 'Detail Penjualan Varian per Koleksi'; controls.classList.remove('hidden'); label.innerText = 'Pilih Koleksi:'; const availableCols = [...new Set(currentSalesFilteredData.map(r => String(r.Koleksi || 'N/A').trim()))].sort(); select.innerHTML = availableCols.map(c => `<option value="${c}">${c}</option>`).join(''); if (specificClicked && availableCols.includes(specificClicked)) select.value = specificClicked; renderSalesModalTable('collection'); }
             else if (type === 'source') { title.innerText = 'Detail Produk per Channel Sales'; controls.classList.remove('hidden'); label.innerText = 'Pilih Channel Sales:'; const availableSources = [...new Set(currentSalesFilteredData.map(r => String(r.Source || 'N/A').trim()))].sort(); select.innerHTML = availableSources.map(c => `<option value="${c}">${c}</option>`).join(''); if (specificClicked && availableSources.includes(specificClicked)) select.value = specificClicked; renderSalesModalTable('source'); }
+            else if (type === 'customer') { title.innerText = 'Detail Penjualan Mitra City'; controls.classList.remove('hidden'); label.innerText = 'Pilih Mitra / City:'; const availableCustomers = [...new Set(currentSalesFilteredData.map(r => String(r['Nama Customer'] || 'N/A').trim()))].sort(); select.innerHTML = '<option value="ALL">Semua Mitra / City</option>' + availableCustomers.map(c => `<option value="${c}">${c}</option>`).join(''); if (specificClicked && availableCustomers.includes(specificClicked)) select.value = specificClicked; else select.value = 'ALL'; renderSalesModalTable('customer'); }
         }
 
         function closeSalesModal() { document.getElementById('salesDetailModal').classList.add('hidden'); }
@@ -1259,7 +1387,20 @@
                 thName.innerText = 'Nama Baju'; const selectedVal = document.getElementById('salesModalDropdownSelect').value; let agg = {};
                 currentSalesFilteredData.filter(r => (r.Source || 'N/A') === selectedVal).forEach(r => { let n = r['Nama Baju']; if (!agg[n]) agg[n] = {q: 0, r: 0}; agg[n].q += r['Qty Terjual']; agg[n].r += r.Revenue; });
                 dataArr = Object.entries(agg).map(([name, data]) => ({name, q: data.q, r: data.r})); dataArr.sort((a, b) => b.r - a.r); dataArr = dataArr.slice(0, 15); 
+            } else if (type === 'customer') {
+                thName.innerText = 'Nama Mitra / City'; const selectedVal = document.getElementById('salesModalDropdownSelect').value; let agg = {};
+                currentSalesFilteredData.forEach(r => { 
+                    let custName = String(r['Nama Customer'] || 'N/A').trim();
+                    if(selectedVal === 'ALL' || custName === selectedVal) {
+                        if (!agg[custName]) agg[custName] = {q: 0, r: 0}; 
+                        agg[custName].q += r['Qty Terjual']; 
+                        agg[custName].r += r.Revenue; 
+                    }
+                });
+                dataArr = Object.entries(agg).map(([name, data]) => ({name, q: data.q, r: data.r})); 
+                dataArr.sort((a, b) => b.q - a.q);
             }
+            
             if(dataArr.length === 0) { tbody.innerHTML = `<tr><td colspan=\"3\" class=\"px-6 py-10 text-center text-slate-400 font-medium italic\">Tidak ada data untuk ditampilkan</td></tr>`; } else {
                 tbody.innerHTML = dataArr.map((item, index) => `<tr class=\"hover:bg-indigo-50/40 transition-colors group cursor-default\"><td class=\"px-6 py-4\"><div class=\"flex items-center gap-3\"><span class=\"w-6 h-6 rounded-full ${index < 3 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-[10px] font-extrabold group-hover:scale-110 transition-transform\">${index + 1}</span><span class=\"font-extrabold text-slate-700 text-xs\">${item.name}</span></div></td><td class=\"px-6 py-4 text-right font-black text-slate-600\">${item.q.toLocaleString('id-ID')} <span class=\"text-[10px] font-normal text-slate-400\">pcs</span></td><td class=\"px-6 py-4 text-right font-black text-emerald-600 group-hover:text-emerald-500 transition-colors\">${formatRupiah(item.r)}</td></tr>`).join('');
             }
