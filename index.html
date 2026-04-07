@@ -1274,11 +1274,11 @@
             } else { document.getElementById('growthSection').classList.add('hidden'); }
 
             let filteredTarget = workingTargetData.filter(t => 
-                (cBrand === 'ALL' || String(t.Brand||'').trim() === cBrand) && 
-                (cYear.includes('ALL') || cYear.includes(String(t.Tahun).trim())) && 
-                (cMonth.includes('ALL') || cMonth.includes(String(t.Bulan).trim().toUpperCase())) && 
-                (cSource === 'ALL' || String(t.Source||'').trim() === cSource)
-            );
+    (cBrand === 'ALL' || String(t.Brand||'').trim() === cBrand) && 
+    (cYear.includes('ALL') || cYear.includes(String(t.Tahun).trim())) && 
+    (cMonth.includes('ALL') || cMonth.map(m => m.toUpperCase()).includes(String(t.Bulan).trim().toUpperCase())) && 
+    (cSource === 'ALL' || String(t.Source||'').trim() === cSource)
+);
             globalSalesTarget = filteredTarget.reduce((sum, t) => sum + (parseFloat(t.Target) || 0), 0);
             
             // Deteksi jika Tahun dipilih tapi Bulan dibiarkan (Target Tahunan)
