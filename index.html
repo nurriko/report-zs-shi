@@ -285,7 +285,11 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                         <div class="space-y-6">
-                            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100"><p class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Revenue Tercapai</p><p id="achievedRev" class="text-2xl font-black text-emerald-600">Rp 0</p></div>
+                            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                                <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Revenue Tercapai</p>
+                                <p id="achievedRev" class="text-2xl font-black text-emerald-600">Rp 0</p>
+                                <p id="achievedQty" class="text-[10px] text-emerald-500 font-bold mt-1">0 pcs terjual</p>
+                            </div>
                             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100"><p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gap to Target</p><p id="gapRev" class="text-xl font-bold text-slate-600">Rp 0</p><p id="gapText" class="text-[10px] text-slate-400 mt-1 italic">Kurang segini lagi buat capai target!</p></div>
                         </div>
                         <div class="md:col-span-2 relative h-[250px] flex justify-center">
@@ -656,6 +660,24 @@
         
         const brandColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#a855f7'];
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+        const normalizeMonth = (m) => {
+            if(!m) return '';
+            const mStr = String(m).trim().toUpperCase();
+            if(mStr.startsWith('JAN')) return 'JANUARI';
+            if(mStr.startsWith('FEB')) return 'FEBRUARI';
+            if(mStr.startsWith('MAR')) return 'MARET';
+            if(mStr.startsWith('APR')) return 'APRIL';
+            if(mStr.startsWith('MEI') || mStr.startsWith('MAY')) return 'MEI';
+            if(mStr.startsWith('JUN')) return 'JUNI';
+            if(mStr.startsWith('JUL')) return 'JULI';
+            if(mStr.startsWith('AGU') || mStr.startsWith('AUG')) return 'AGUSTUS';
+            if(mStr.startsWith('SEP')) return 'SEPTEMBER';
+            if(mStr.startsWith('OKT') || mStr.startsWith('OCT')) return 'OKTOBER';
+            if(mStr.startsWith('NOV')) return 'NOVEMBER';
+            if(mStr.startsWith('DES') || mStr.startsWith('DEC')) return 'DESEMBER';
+            return mStr;
+        };
 
         let inventory = [];
         let globalConsolidatedData = []; 
@@ -1131,7 +1153,12 @@
                 await saveLargeArray('sales', []); 
                 await saveLargeArray('targets', []);
                 rawSalesData = []; rawTargetData = []; workingSalesData = []; workingTargetData = [];
-                document.getElementById('salesDateRangeBadge').classList.add('hidden'); document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none';
+                document.getElementById('salesDateRangeBadge').classList.add('hidden'); 
+                document.getElementById('fileStatus').classList.add('hidden'); 
+                document.getElementById('filterArea').classList.add('hidden'); 
+                document.getElementById('targetSection').classList.add('hidden'); 
+                document.getElementById('chartsArea').style.display = 'none';
+                document.getElementById('growthSection').classList.add('hidden');
                 alert('Data Sales berhasil dihapus sepenuhnya dari Database Cloud!');
             }
         }
@@ -1152,7 +1179,11 @@
                 
                 updateSalesDateRange(); renderSalesFilterButtons(); updateSalesDashboard();
             } else {
-                document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none';
+                document.getElementById('fileStatus').classList.add('hidden'); 
+                document.getElementById('filterArea').classList.add('hidden'); 
+                document.getElementById('targetSection').classList.add('hidden'); 
+                document.getElementById('chartsArea').style.display = 'none';
+                document.getElementById('growthSection').classList.add('hidden');
             }
         }
 
@@ -1274,11 +1305,12 @@
             } else { document.getElementById('growthSection').classList.add('hidden'); }
 
             let filteredTarget = workingTargetData.filter(t => 
-    (cBrand === 'ALL' || String(t.Brand||'').trim() === cBrand) && 
-    (cYear.includes('ALL') || cYear.includes(String(t.Tahun).trim())) && 
-    (cMonth.includes('ALL') || cMonth.map(m => m.toUpperCase()).includes(String(t.Bulan).trim().toUpperCase())) && 
-    (cSource === 'ALL' || String(t.Source||'').trim() === cSource)
-);
+                (cBrand === 'ALL' || String(t.Brand||'').trim().toUpperCase() === String(cBrand).trim().toUpperCase()) && 
+                (cYear.includes('ALL') || cYear.includes(String(t.Tahun).trim())) && 
+                (cMonth.includes('ALL') || cMonth.some(m => normalizeMonth(m) === normalizeMonth(t.Bulan))) && 
+                (cSource === 'ALL' || String(t.Source||'').trim().toUpperCase() === String(cSource).trim().toUpperCase())
+            );
+            
             globalSalesTarget = filteredTarget.reduce((sum, t) => sum + (parseFloat(t.Target) || 0), 0);
             
             // Deteksi jika Tahun dipilih tapi Bulan dibiarkan (Target Tahunan)
@@ -1316,11 +1348,15 @@
             const dualBarOps = (fullLabels, chartTypeForModal) => ({ indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 70 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: (items) => getOnlyName(fullLabels[items[0].dataIndex]), label: (ctx) => [`Qty: ${ctx.parsed.x} pcs`, `Revenue: ${ctx.dataset.revenueData ? formatRupiah(ctx.dataset.revenueData[ctx.dataIndex]) : ''}`] } }, datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#475569', font: { weight: '800', size: 11 }, formatter: v => v + ' pcs', clip: false } }, scales: { x: { display: false, grid: { display: false } }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } }, onClick: (e, elements, chart) => { if (elements.length > 0 && chartTypeForModal) openSalesModal(chartTypeForModal, fullLabels[elements[0].index]); } });
 
             const currentTotalRevenue = Object.values(agg.sources).reduce((a, b) => a + b.r, 0); 
+            const currentTotalQty = Object.values(agg.sources).reduce((a, b) => a + b.q, 0);
+            
             const gap = globalSalesTarget - currentTotalRevenue;
             let percentage = globalSalesTarget > 0 ? (currentTotalRevenue / globalSalesTarget) * 100 : (currentTotalRevenue > 0 ? 100 : 0);
             
             document.getElementById('achievedRev').innerText = formatRupiah(currentTotalRevenue); 
+            document.getElementById('achievedQty').innerText = `${currentTotalQty.toLocaleString('id-ID')} pcs terjual`;
             document.getElementById('achievedPercent').innerText = `${percentage.toFixed(1)}%`;
+            
             const gapEl = document.getElementById('gapRev'), gapTextEl = document.getElementById('gapText');
             if (gap > 0) { 
                 gapEl.innerText = `- ${formatRupiah(gap)}`; gapEl.className = "text-xl font-bold text-rose-500"; 
