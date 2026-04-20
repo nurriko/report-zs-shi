@@ -418,7 +418,21 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-enter delay-100">
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-6 animate-enter delay-100 flex gap-4 items-start shadow-sm">
+                    <div class="text-blue-500 mt-0.5 text-xl"><i class="fas fa-info-circle"></i></div>
+                    <div class="text-xs text-blue-800 leading-relaxed">
+                        <strong class="block mb-2 text-sm">💡 Info Indikator Performa:</strong>
+                        <ul class="list-disc pl-4 space-y-1.5 mb-3">
+                            <li><span class="font-bold text-emerald-600">🔥 Fast Selling:</span> Barang dengan Sell-Through Rate (STR) <strong>≥ 80%</strong> ATAU barang yang baru rilis <strong>di bawah 30 hari</strong> (Masa Toleransi).</li>
+                            <li><span class="font-bold text-rose-600">❄️ Slow Selling:</span> Barang yang sudah rilis <strong>lebih dari 30 hari</strong> (1 bulan) TETAPI Sell-Through Rate (STR) masih <strong>di bawah 80%</strong>.</li>
+                        </ul>
+                        <div class="bg-white/60 p-2.5 rounded-lg border border-blue-200/50">
+                            <strong>Rumus STR:</strong> ( Total Terjual / ( Total Terjual + Sisa Stok Gudang ) ) &times; 100%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-enter delay-200">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left whitespace-nowrap min-w-[800px]">
                             <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black border-b tracking-widest">
@@ -1686,8 +1700,27 @@
                 }
 
                 let breakdownEncoded = encodeURIComponent(JSON.stringify(sourceBreakdown));
+                let safeLaunchName = String(launch.nama).replace(/'/g, "\\'");
 
-                html += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4"><div class="flex items-center gap-3"><img src="${launch.foto}" class="w-10 h-10 object-cover rounded-lg shadow-sm border border-slate-200"><div><div class="font-bold text-slate-700 text-xs">${launch.nama}</div><div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">${launch.brand} - ${launch.koleksi}</div></div></div></td><td class="p-4 text-center"><div class="text-xs font-bold text-slate-600 mb-1.5">${launch.launching_date || '-'}</div>${daysElapsedText}</td><td class="p-4 text-right"><div class="font-black text-emerald-600 text-sm cursor-pointer hover:underline hover:text-emerald-500 transition-colors" onclick="showBreakdown('${launch.nama}', '${breakdownEncoded}')" title="Klik untuk lihat detail per Source">${totalTerjual.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-emerald-400">pcs</span></div>${velocityText}</td><td class="p-4 text-right font-black text-amber-600">${sisaGudang.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-amber-400">pcs</span></td><td class="p-4 text-center"><div class="flex flex-col items-center gap-1"><span class="font-black text-indigo-600 text-sm">${strPercentage.toFixed(1)}%</span><div class="w-full bg-slate-100 rounded-full h-1.5 max-w-[80px]"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${strPercentage}%"></div></div></div></td><td class="p-4 text-center">${statusBadge}</td></tr>`;
+                html += `<tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-4 cursor-pointer group" onclick="showBreakdown('${safeLaunchName}', '${breakdownEncoded}')" title="Lihat detail penjualan per Source">
+                        <div class="flex items-center gap-3">
+                            <img src="${launch.foto}" class="w-10 h-10 object-cover rounded-lg shadow-sm border border-slate-200 group-hover:scale-105 transition-transform bg-white">
+                            <div>
+                                <div class="font-bold text-slate-700 text-xs group-hover:text-indigo-600 transition-colors">${launch.nama} <i class="fas fa-search ml-1 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"></i></div>
+                                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">${launch.brand} - ${launch.koleksi}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center"><div class="text-xs font-bold text-slate-600 mb-1.5">${launch.launching_date || '-'}</div>${daysElapsedText}</td>
+                    <td class="p-4 text-right">
+                        <div class="font-black text-emerald-600 text-sm cursor-pointer hover:underline hover:text-emerald-500 transition-colors" onclick="showBreakdown('${safeLaunchName}', '${breakdownEncoded}')" title="Klik untuk lihat detail per Source">${totalTerjual.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-emerald-400">pcs</span></div>
+                        ${velocityText}
+                    </td>
+                    <td class="p-4 text-right font-black text-amber-600">${sisaGudang.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-amber-400">pcs</span></td>
+                    <td class="p-4 text-center"><div class="flex flex-col items-center gap-1"><span class="font-black text-indigo-600 text-sm">${strPercentage.toFixed(1)}%</span><div class="w-full bg-slate-100 rounded-full h-1.5 max-w-[80px]"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${strPercentage}%"></div></div></div></td>
+                    <td class="p-4 text-center">${statusBadge}</td>
+                </tr>`;
             });
             tbody.innerHTML = html;
         }
