@@ -1968,16 +1968,30 @@
 
         function simplifyName(name) { return String(name||'').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim(); }
 
-        function renderMovementApp() {
-            const tbody = document.getElementById('movementTableBody'); const search = document.getElementById('searchMovement').value.toLowerCase();
-            if (launchingData.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium italic">Belum ada data di jadwal launching...</td></tr>`; return; }
+                        window.showStockDetail = function(name, normal, minor) {
+            alert(`Detail Stok ${name}:\n\n• Kondisi Normal: ${normal} pcs\n• Kondisi Minor: ${minor} pcs`);
+        };
 
-            let html = ''; let filteredLaunch = launchingData.filter(c => (c.nama||'').toLowerCase().includes(search) || (c.koleksi||'').toLowerCase().includes(search));
+        function renderMovementApp() {
+            const tbody = document.getElementById('movementTableBody'); 
+            const search = document.getElementById('searchMovement').value.toLowerCase();
+            
+            if (launchingData.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium italic">Belum ada data di jadwal launching...</td></tr>`; 
+                return; 
+            }
+
+            let html = ''; 
+            let filteredLaunch = launchingData.filter(c => (c.nama||'').toLowerCase().includes(search) || (c.koleksi||'').toLowerCase().includes(search));
 
             filteredLaunch.forEach(launch => {
-                const baseName = simplifyName(launch.nama); if (!baseName) return;
+                const baseName = simplifyName(launch.nama); 
+                if (!baseName) return;
+                
                 const isRamadhan = launch.periode === 'Ramadhan';
-                let totalTerjual = 0; let sisaGudang = 0; 
+                let totalTerjual = 0; 
+                let sisaNormal = 0;
+                let sisaMinor = 0;
                 let sizeSourceBreakdown = {}; 
 
                 rawSalesData.forEach(sale => {
@@ -1987,10 +2001,7 @@
                     if (isRamadhan) {
                         const saleVariant = String(sale['Variant'] || '');
                         const extName = simplifyName(extractRamadhanName(saleVariant));
-                        if (extName.includes(baseName)) {
-                            match = true;
-                            detectedSize = extractSize(saleVariant) || 'ALL SIZE';
-                        }
+                        if (extName.includes(baseName)) { match = true; detectedSize = extractSize(saleVariant) || 'ALL SIZE'; }
                     } else {
                         const saleName = simplifyName(sale['Nama Baju']);
                         if (saleName.includes(baseName)) match = true;
@@ -2000,7 +2011,6 @@
                         let qty = parseInt(sale['Qty Terjual']) || 0; 
                         totalTerjual += qty; 
                         let src = sale.Source || 'Lainnya'; 
-                        
                         if (!sizeSourceBreakdown[detectedSize]) sizeSourceBreakdown[detectedSize] = {};
                         sizeSourceBreakdown[detectedSize][src] = (sizeSourceBreakdown[detectedSize][src] || 0) + qty;
                     }
@@ -2008,70 +2018,62 @@
 
                 inventory.forEach(inv => {
                     let match = false;
-                    if (isRamadhan) {
-                        const invVariant = String(inv.variant || '');
-                        const extName = simplifyName(extractRamadhanName(invVariant));
-                        const extCleanName = simplifyName(inv.cleanName);
-                        
-                        if (extName.includes(baseName) || extCleanName.includes(baseName)) {
-                            match = true;
-                        }
-                    } else {
-                        const invName = simplifyName(inv.cleanName);
-                        if (invName.includes(baseName)) match = true;
+                    const invName = simplifyName(inv.cleanName);
+                    
+                    // Matching Fleksibel
+                    if (invName.includes(baseName) || baseName.includes(invName)) {
+                        match = true;
                     }
 
                     if (match && String(inv.brand).toUpperCase() === String(launch.brand).toUpperCase()) { 
-                        sisaGudang += (parseInt(inv.onHand) || 0); 
+                        if (inv.condition === 'Minor') sisaMinor += (parseInt(inv.onHand) || 0);
+                        else sisaNormal += (parseInt(inv.onHand) || 0);
                     }
                 });
-
-                let daysElapsedText = '<span class="text-[9px] text-slate-400 italic">Belum Diatur</span>'; let velocityText = '';
+                
+                let sisaTotal = sisaNormal + sisaMinor;
+                let daysElapsedText = '<span class="text-[9px] text-slate-400 italic">Belum Diatur</span>'; 
+                let velocityText = '';
                 let diffDays = -1;
                 
                 if (launch.launching_date) {
                     const launchDate = new Date(launch.launching_date); const today = new Date(); launchDate.setHours(0,0,0,0); today.setHours(0,0,0,0);
                     diffDays = Math.ceil((today - launchDate) / (1000 * 60 * 60 * 24)); 
-                    
                     if (diffDays >= 0) {
                         const hariTeks = diffDays === 0 ? 'Baru Hari Ini' : `Berjalan ${diffDays} Hari`;
                         daysElapsedText = `<span class="text-[9px] font-extrabold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${hariTeks}</span>`;
-                        if (diffDays > 0 && totalTerjual > 0) { const vel = (totalTerjual / diffDays).toFixed(1); velocityText = `<div class="text-[10px] text-emerald-500 font-bold mt-1.5 tracking-tight"><i class="fas fa-tachometer-alt mr-1"></i>${vel} <span class="text-[8px] font-normal text-emerald-400">pcs/hari</span></div>`; }
-                    } else { daysElapsedText = `<span class="text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Rilis ${Math.abs(diffDays)} Hari Lagi</span>`; }
-                }
-
-                const totalProduksi = totalTerjual + sisaGudang; let strPercentage = totalProduksi > 0 ? (totalTerjual / totalProduksi) * 100 : 0;
-                
-                let statusBadge = '';
-                if (totalProduksi === 0) {
-                    statusBadge = '<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold uppercase border border-slate-200">Belum Ada Data</span>';
-                } else {
-                    if (diffDays > 30 && strPercentage < 80) {
-                        statusBadge = '<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded-md text-[10px] font-black uppercase border border-rose-200 shadow-sm"><i class="fas fa-snowflake mr-1 text-blue-500"></i>Slow Selling</span>';
-                    } else {
-                        statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-[10px] font-black uppercase border border-emerald-200 shadow-sm"><i class="fas fa-fire mr-1 text-rose-500"></i>Fast Selling</span>';
+                        if (diffDays > 0 && totalTerjual > 0) { 
+                            const vel = (totalTerjual / diffDays).toFixed(1); 
+                            velocityText = `<div class="text-[10px] text-emerald-500 font-bold mt-1.5 tracking-tight"><i class="fas fa-tachometer-alt mr-1"></i>${vel} <span class="text-[8px] font-normal text-emerald-400">pcs/hari</span></div>`; 
+                        }
+                    } else { 
+                        daysElapsedText = `<span class="text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Rilis ${Math.abs(diffDays)} Hari Lagi</span>`; 
                     }
                 }
 
+                const totalProduksi = totalTerjual + sisaTotal; 
+                let strPercentage = totalProduksi > 0 ? (totalTerjual / totalProduksi) * 100 : 0;
+                let statusBadge = totalProduksi === 0 ? '<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold uppercase">No Data</span>' : (diffDays > 30 && strPercentage < 80 ? '<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded-md text-[10px] font-black uppercase border border-rose-200 shadow-sm">Slow Selling</span>' : '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-[10px] font-black uppercase border border-emerald-200 shadow-sm">Fast Selling</span>');
+
                 let breakdownEncoded = encodeURIComponent(JSON.stringify(sizeSourceBreakdown));
-                let safeLaunchName = String(launch.nama).replace(/'/g, "\\'");
+                let safeName = String(launch.nama).replace(/'/g, "\'");
+                
+                // SEL SISA GUDANG KLIKABLE
+                let sisaGudangHtml = `<div class="font-black text-amber-600 cursor-pointer hover:underline" onclick="showStockDetail('${safeName}', ${sisaNormal}, ${sisaMinor})" title="Klik untuk rincian Normal vs Minor">${sisaTotal.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-amber-400">pcs</span></div>`;
 
                 html += `<tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-4 cursor-pointer group" onclick="showBreakdown('${safeLaunchName}', '${breakdownEncoded}')" title="Lihat detail penjualan per Source">
+                    <td class="p-4 cursor-pointer group" onclick="showBreakdown('${safeName}', '${breakdownEncoded}')">
                         <div class="flex items-center gap-3">
-                            <img src="${launch.foto}" class="w-10 h-10 object-cover rounded-lg shadow-sm border border-slate-200 group-hover:scale-105 transition-transform bg-white">
+                            <img src="${launch.foto}" class="w-10 h-10 object-cover rounded-lg shadow-sm border border-slate-200">
                             <div>
-                                <div class="font-bold text-slate-700 text-xs group-hover:text-indigo-600 transition-colors">${launch.nama} <i class="fas fa-search ml-1 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"></i></div>
+                                <div class="font-bold text-slate-700 text-xs">${launch.nama}</div>
                                 <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">${launch.brand} - ${launch.koleksi}</div>
                             </div>
                         </div>
                     </td>
                     <td class="p-4 text-center"><div class="text-xs font-bold text-slate-600 mb-1.5">${launch.launching_date || '-'}</div>${daysElapsedText}</td>
-                    <td class="p-4 text-right">
-                        <div class="font-black text-emerald-600 text-sm cursor-pointer hover:underline hover:text-emerald-500 transition-colors" onclick="showBreakdown('${safeLaunchName}', '${breakdownEncoded}')" title="Klik untuk lihat detail per Source">${totalTerjual.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-emerald-400">pcs</span></div>
-                        ${velocityText}
-                    </td>
-                    <td class="p-4 text-right font-black text-amber-600">${sisaGudang.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-amber-400">pcs</span></td>
+                    <td class="p-4 text-right"><div class="font-black text-emerald-600 text-sm cursor-pointer hover:underline" onclick="showBreakdown('${safeName}', '${breakdownEncoded}')">${totalTerjual.toLocaleString('id-ID')} <span class="text-[9px] font-normal text-emerald-400">pcs</span></div>${velocityText}</td>
+                    <td class="p-4 text-right">${sisaGudangHtml}</td>
                     <td class="p-4 text-center"><div class="flex flex-col items-center gap-1"><span class="font-black text-indigo-600 text-sm">${strPercentage.toFixed(1)}%</span><div class="w-full bg-slate-100 rounded-full h-1.5 max-w-[80px]"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${strPercentage}%"></div></div></div></td>
                     <td class="p-4 text-center">${statusBadge}</td>
                 </tr>`;
