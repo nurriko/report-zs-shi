@@ -63,8 +63,12 @@
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
         .delay-300 { animation-delay: 0.3s; }
+
         .delay-400 { animation-delay: 0.4s; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="h-screen w-full flex bg-slate-50 relative">
@@ -408,7 +412,15 @@
                             <input type="text" id="searchLaunching" onkeyup="renderBajuLaunching()" placeholder="Cari Baju / Koleksi..." class="pl-4 pr-10 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <!-- SCROLL HORIZONTAL BUTTONS -->
+                    <div class="bg-slate-100/50 p-2 flex justify-between items-center border-b border-slate-100">
+                        <span class="text-[11px] text-slate-500 font-bold ml-3"><i class="fas fa-arrows-alt-h mr-1 text-indigo-400"></i> Geser Tabel Kanan/Kiri</span>
+                        <div class="flex gap-2 mr-2">
+                            <button onclick="document.getElementById('launchingTableWrapper').scrollBy({left: -300, behavior: 'smooth'})" class="bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-50 text-indigo-600 transition-colors"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="document.getElementById('launchingTableWrapper').scrollBy({left: 300, behavior: 'smooth'})" class="bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-50 text-indigo-600 transition-colors"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div id="launchingTableWrapper" class="overflow-x-auto hide-scrollbar scroll-smooth">
                         <table class="w-full text-left whitespace-nowrap min-w-[1000px]">
                             <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black border-b tracking-widest">
                                 <tr>
@@ -655,6 +667,29 @@
 
     <div id="zoomModal" class="hidden fixed inset-0 z-[1100] bg-slate-900/90 flex justify-center items-center p-4 cursor-zoom-out" onclick="this.classList.add('hidden')">
         <img id="zoomImageSrc" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl transform transition-transform scale-95 duration-300">
+    </div>
+
+    <!-- MODAL EDIT LAUNCHING -->
+    <div id="editLaunchingModal" class="hidden fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 modal-animate">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fas fa-edit text-indigo-500"></i> Edit Data Baju Launching</h2>
+                <button onclick="document.getElementById('editLaunchingModal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="edit-l-id">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Brand</label><select id="edit-l-brand" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"><option value="ZS">ZS</option><option value="SHI">SHI</option></select></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Periode</label><select id="edit-l-periode" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"><option value="Regular">Regular</option><option value="Ramadhan">Ramadhan</option><option value="Lebaran">Lebaran</option></select></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tahun Periode</label><input type="number" id="edit-l-tahun" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Baju</label><input type="text" id="edit-l-nama" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Koleksi</label><input type="text" id="edit-l-koleksi" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Variant</label><input type="text" id="edit-l-variant" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Size</label><input type="text" id="edit-l-size" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"></div>
+            </div>
+            <button onclick="saveEditLaunching()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95"><i class="fas fa-save mr-2"></i>Simpan Perubahan</button>
+        </div>
     </div>
 
     <div id="salesLaunchModal" class="hidden fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4">
@@ -1817,6 +1852,7 @@
                         if(excelData.length === 0) { alert("Data kosong!"); return; }
                         
                         let addedCount = 0;
+                        let updatedCount = 0;
                         const batch = db.batch();
                         const timeNow = Date.now();
                         
@@ -1824,34 +1860,56 @@
                             const row = excelData[i];
                             if (!row['Nama Baju'] || !row['Variant']) continue;
                             
-                            const id = "LC-" + timeNow + "-" + i;
-                            const docRef = db.collection('launching_clothes').doc(id);
+                            const rBrand = String(row['Brand'] || 'ZS').trim();
+                            const rNama = String(row['Nama Baju']).trim();
+                            const rVariant = String(row['Variant']).trim();
                             
-                            batch.set(docRef, {
-                                id: id,
-                                brand: String(row['Brand'] || 'ZS').trim(),
-                                periode: String(row['Periode'] || 'Regular').trim(),
-                                tahun_periode: String(row['Tahun Periode'] || new Date().getFullYear()).trim(),
-                                nama: String(row['Nama Baju']).trim(),
-                                koleksi: String(row['Koleksi'] || '-').trim(),
-                                variant: String(row['Variant']).trim(),
-                                size: String(row['Size'] || 'ALL SIZE').trim(),
-                                kirim: '',
-                                marketing_desc: '',
-                                marketing_foto_cek: false,
-                                launching_date: '',
-                                launching_time: '',
-                                launching_sources: [],
-                                foto: 'https://via.placeholder.com/150?text=No+Photo',
-                                by: currentUser.username,
-                                created_at: timeNow + i
-                            });
-                            addedCount++;
+                            const existingItem = launchingData.find(item => 
+                                String(item.nama).toLowerCase() === rNama.toLowerCase() &&
+                                String(item.variant).toLowerCase() === rVariant.toLowerCase() &&
+                                String(item.brand).toLowerCase() === rBrand.toLowerCase()
+                            );
+                            
+                            if (existingItem) {
+                                const docRef = db.collection('launching_clothes').doc(existingItem.id);
+                                batch.update(docRef, {
+                                    periode: String(row['Periode'] || existingItem.periode).trim(),
+                                    tahun_periode: String(row['Tahun Periode'] || existingItem.tahun_periode).trim(),
+                                    koleksi: String(row['Koleksi'] || existingItem.koleksi).trim(),
+                                    size: String(row['Size'] || existingItem.size).trim(),
+                                    updated_by: currentUser.username,
+                                    updated_at: timeNow + i
+                                });
+                                updatedCount++;
+                            } else {
+                                const id = "LC-" + timeNow + "-" + i;
+                                const docRef = db.collection('launching_clothes').doc(id);
+                                batch.set(docRef, {
+                                    id: id,
+                                    brand: rBrand,
+                                    periode: String(row['Periode'] || 'Regular').trim(),
+                                    tahun_periode: String(row['Tahun Periode'] || new Date().getFullYear()).trim(),
+                                    nama: rNama,
+                                    koleksi: String(row['Koleksi'] || '-').trim(),
+                                    variant: rVariant,
+                                    size: String(row['Size'] || 'ALL SIZE').trim(),
+                                    kirim: '',
+                                    marketing_desc: '',
+                                    marketing_foto_cek: false,
+                                    launching_date: '',
+                                    launching_time: '',
+                                    launching_sources: [],
+                                    foto: 'https://via.placeholder.com/150?text=No+Photo',
+                                    by: currentUser.username,
+                                    created_at: timeNow + i
+                                });
+                                addedCount++;
+                            }
                         }
                         
-                        if (addedCount > 0) {
+                        if (addedCount > 0 || updatedCount > 0) {
                             await batch.commit();
-                            alert(`Berhasil mengimport ${addedCount} data produk ke Jadwal Launching!`);
+                            alert(`Import Berhasil!\n\n- ${addedCount} Baju Baru Ditambahkan\n- ${updatedCount} Baju Lama Diperbarui`);
                         } else {
                             alert("Tidak ada data yang valid untuk diimport. Pastikan format sesuai template.");
                         }
@@ -1866,6 +1924,41 @@
             }, 100);
         }
 
+        
+        function openEditLaunchingModal(id) {
+            const item = launchingData.find(x => x.id === id);
+            if (!item) return;
+            document.getElementById('edit-l-id').value = id;
+            document.getElementById('edit-l-brand').value = item.brand || 'ZS';
+            document.getElementById('edit-l-periode').value = item.periode || 'Regular';
+            document.getElementById('edit-l-tahun').value = item.tahun_periode || new Date().getFullYear();
+            document.getElementById('edit-l-nama').value = item.nama || '';
+            document.getElementById('edit-l-koleksi').value = item.koleksi || '';
+            document.getElementById('edit-l-variant').value = item.variant || '';
+            document.getElementById('edit-l-size').value = item.size || '';
+            document.getElementById('editLaunchingModal').classList.remove('hidden');
+        }
+
+        function saveEditLaunching() {
+            const id = document.getElementById('edit-l-id').value;
+            const payload = {
+                brand: document.getElementById('edit-l-brand').value,
+                periode: document.getElementById('edit-l-periode').value,
+                tahun_periode: document.getElementById('edit-l-tahun').value,
+                nama: document.getElementById('edit-l-nama').value,
+                koleksi: document.getElementById('edit-l-koleksi').value,
+                variant: document.getElementById('edit-l-variant').value,
+                size: document.getElementById('edit-l-size').value,
+                updated_by: currentUser.username,
+                updated_at: Date.now()
+            };
+            db.collection('launching_clothes').doc(id).update(payload)
+            .then(() => {
+                alert("Data baju berhasil diperbarui!");
+                document.getElementById('editLaunchingModal').classList.add('hidden');
+            }).catch(err => alert("Gagal update: " + err.message));
+        }
+        
         function submitBajuLaunching() {
             const br = document.getElementById('l-brand').value, p = document.getElementById('l-periode').value, t = document.getElementById('l-tahun').value, n = document.getElementById('l-nama').value, k = document.getElementById('l-koleksi').value, v = document.getElementById('l-variant').value, s = document.getElementById('l-size').value, f = document.getElementById('l-foto').files[0];
             if(!n || !k || !v || !s) return alert("Mohon lengkapi data teks produk!");
@@ -2022,7 +2115,7 @@
                     <td class="p-3 text-center align-middle">${uiL}</td>
                     <td class="p-3 text-center align-middle">${uiK}</td>
                     <td class="p-3 text-center align-middle">${uiM}</td>
-                    <td class="p-3 text-center">${canDelete ? `<button onclick="if(confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) db.collection('launching_clothes').doc('${c.id}').delete()" class="text-rose-400 hover:text-rose-600 transition-colors bg-rose-50 hover:bg-rose-100 p-2 rounded-lg" title="Hapus Baju dari Jadwal"><i class="fas fa-trash-alt"></i></button>` : '-'}</td>
+                    <td class="p-3 text-center">${canDelete ? `<div class="flex justify-center gap-1"><button onclick="openEditLaunchingModal('${c.id}')" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 p-2 rounded-lg" title="Edit Data"><i class="fas fa-edit"></i></button><button onclick="if(confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) db.collection('launching_clothes').doc('${c.id}').delete()" class="text-rose-400 hover:text-rose-600 transition-colors bg-rose-50 hover:bg-rose-100 p-2 rounded-lg" title="Hapus Baju dari Jadwal"><i class="fas fa-trash-alt"></i></button></div>` : '-'}</td>
                 </tr>`;
             }).join('');
         }
