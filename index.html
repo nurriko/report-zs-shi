@@ -737,9 +737,8 @@
                     
                     const sortedVariants = Object.entries(breakdown).sort((a,b) => a[0].localeCompare(b[0]));
                     for (const [v, qt] of sortedVariants) {
-                        if (qt.normal > 0 || qt.minor > 0) {
-                           breakdownHtml += `<div class="flex justify-between items-center py-1.5 text-xs border-b border-slate-50 last:border-0"><span class="font-bold text-slate-700">${v}</span><div class="flex gap-1.5"><span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-black border border-emerald-100" title="Normal">${qt.normal}</span><span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-black border border-rose-100" title="Minor">${qt.minor}</span></div></div>`;
-                        }
+                        // Tampilkan semua variant, termasuk yang <= 0
+                        breakdownHtml += `<div class="flex justify-between items-center py-1.5 text-xs border-b border-slate-50 last:border-0"><span class="font-bold text-slate-700">${v}</span><div class="flex gap-1.5"><span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-black border border-emerald-100" title="Normal">${qt.normal}</span><span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-black border border-rose-100" title="Minor">${qt.minor}</span></div></div>`;
                     }
                     breakdownHtml += '</div></div>';
                 } catch(e) {}
