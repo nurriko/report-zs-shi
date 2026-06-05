@@ -185,6 +185,10 @@
                         </div>
                     </div>
                     <div class="admin-only-feature flex-col md:flex-row gap-3 w-full md:w-auto items-center hidden">
+                        <label class="btn-modern group bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3 rounded-2xl shadow-sm hover:shadow-md cursor-pointer flex items-center gap-2">
+                            <input type="checkbox" id="toggleOngkir" onchange="updateSalesDashboard()" class="w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Tampilkan Ongkir</span>
+                        </label>
                         <button onclick="downloadExcelTemplate()" class="btn-modern group bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-300 flex items-center gap-2"><i class="fas fa-download text-indigo-600 text-lg"></i><span class="text-xs font-bold text-slate-700">Templates</span></button>
                         <button onclick="openTargetModal()" class="btn-modern group bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 flex items-center gap-2"><i class="fas fa-bullseye text-emerald-600 text-lg"></i><span class="text-xs font-bold text-slate-700">Input Target</span></button>
                         <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(this)">
@@ -521,10 +525,25 @@
                         </div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                        <div class="flex items-center gap-3"><div class="bg-rose-50 p-3 rounded-full text-rose-600"><i class="fas fa-trash-alt"></i></div><div><h3 class="font-bold text-slate-800">Hapus Data Tahunan</h3><p class="text-xs text-slate-500">Pilih tahun untuk menghapus data secara permanen.</p></div></div>
+                        <div class="flex items-center gap-3"><div class="bg-rose-50 p-3 rounded-full text-rose-600"><i class="fas fa-trash-alt"></i></div><div><h3 class="font-bold text-slate-800">Hapus Data Tahunan</h3><p class="text-xs text-slate-500">Pilih tahun dan bulan untuk menghapus data secara permanen.</p></div></div>
                         <div class="mt-2 flex gap-3">
                             <select id="settingDeleteYearSelect" class="custom-select flex-1 bg-slate-50 border border-slate-200 py-3 px-4 rounded-xl text-sm font-bold focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer"><option value="">Pilih Tahun...</option></select>
-                            <button onclick="deleteSpecificYearData()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
+                            <select id="settingDeleteMonthSelect" class="custom-select flex-1 bg-slate-50 border border-slate-200 py-3 px-4 rounded-xl text-sm font-bold focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer">
+                                <option value="ALL">Semua Bulan</option>
+                                <option value="Januari">Januari</option>
+                                <option value="Februari">Februari</option>
+                                <option value="Maret">Maret</option>
+                                <option value="April">April</option>
+                                <option value="Mei">Mei</option>
+                                <option value="Juni">Juni</option>
+                                <option value="Juli">Juli</option>
+                                <option value="Agustus">Agustus</option>
+                                <option value="September">September</option>
+                                <option value="Oktober">Oktober</option>
+                                <option value="November">November</option>
+                                <option value="Desember">Desember</option>
+                            </select>
+                            <button onclick="deleteSpecificData()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 </div>
@@ -1155,22 +1174,47 @@
             if (deleteSelect) { deleteSelect.innerHTML = `<option value="">Pilih Tahun untuk dihapus...</option>` + allYears.map(y => `<option value="${y}">Tahun ${y}</option>`).join(''); }
         }
 
-        async function deleteSpecificYearData() {
+        async function deleteSpecificData() {
             const yearToDelete = document.getElementById('settingDeleteYearSelect').value;
+            const monthToDelete = document.getElementById('settingDeleteMonthSelect').value;
+            
             if(!yearToDelete) { alert('Silakan pilih tahun yang ingin dihapus terlebih dahulu.'); return; }
-            if(confirm(`PERINGATAN!\n\nApakah Anda yakin ingin menghapus SEMUA data Sales dan Target untuk TAHUN ${yearToDelete} di Firebase?\nData yang terhapus tidak dapat dikembalikan.`)) {
-                const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = "Menghapus Data dari Cloud..."; loader.classList.remove('hidden');
-                rawSalesData = rawSalesData.filter(r => getYear(r.Tanggal) !== yearToDelete); rawTargetData = rawTargetData.filter(t => String(t.Tahun).trim() !== yearToDelete);
+            
+            let confirmMsg = `PERINGATAN!\n\nApakah Anda yakin ingin menghapus data Sales dan Target untuk TAHUN ${yearToDelete}`;
+            if(monthToDelete !== 'ALL') confirmMsg += ` BULAN ${monthToDelete.toUpperCase()}`;
+            confirmMsg += ` di Firebase?\nData yang terhapus tidak dapat dikembalikan.`;
+            
+            if(confirm(confirmMsg)) {
+                const loader = document.getElementById('globalLoading'); 
+                document.getElementById('loadingText').innerText = "Menghapus Data dari Cloud..."; 
+                loader.classList.remove('hidden');
+                
+                if (monthToDelete === 'ALL') {
+                    rawSalesData = rawSalesData.filter(r => getYear(r.Tanggal) !== yearToDelete); 
+                    rawTargetData = rawTargetData.filter(t => String(t.Tahun).trim() !== yearToDelete);
+                } else {
+                    rawSalesData = rawSalesData.filter(r => !(getYear(r.Tanggal) === yearToDelete && normalizeMonth(getMonthName(r.Tanggal)) === normalizeMonth(monthToDelete)));
+                    rawTargetData = rawTargetData.filter(t => !(String(t.Tahun).trim() === yearToDelete && normalizeMonth(t.Bulan) === normalizeMonth(monthToDelete)));
+                }
+
                 try {
-                    await saveLargeArray('sales', rawSalesData); await saveLargeArray('targets', rawTargetData);
-                    if (sysActiveYearFilter.includes(yearToDelete)) {
+                    await saveLargeArray('sales', rawSalesData); 
+                    await saveLargeArray('targets', rawTargetData);
+                    
+                    if (monthToDelete === 'ALL' && sysActiveYearFilter.includes(yearToDelete)) {
                         sysActiveYearFilter = sysActiveYearFilter.filter(y => y !== yearToDelete);
                         if(sysActiveYearFilter.length === 0) sysActiveYearFilter = ['ALL'];
                         await saveDocStr('activeYears', sysActiveYearFilter);
                     }
-                    alert(`Data historis tahun ${yearToDelete} berhasil dihapus dari Cloud!`);
-                    populateSettingsDropdowns(); initSalesUI();
-                } catch(e) { alert('Gagal menghapus data dari Cloud Database.'); } finally { loader.classList.add('hidden'); }
+                    
+                    alert(`Data historis berhasil dihapus dari Cloud!`);
+                    populateSettingsDropdowns(); 
+                    initSalesUI();
+                } catch(e) { 
+                    alert('Gagal menghapus data dari Cloud Database.'); 
+                } finally { 
+                    loader.classList.add('hidden'); 
+                }
             }
         }
 
@@ -1236,7 +1280,7 @@
                             r.Tanggal = tgl; return r;
                         }).filter(r => {
                             const namaBaju = String(r['Nama Baju'] || '').toUpperCase(), koleksi = String(r.Koleksi || '').toUpperCase();
-                            return r['Nama Baju'] && String(r.Source).trim().toUpperCase() !== 'FOC' && !namaBaju.includes('ONGKIR') && !koleksi.includes('GOODIE BAG') && !koleksi.includes('GOODIEBAG');
+                            return r['Nama Baju'] && String(r.Source).trim().toUpperCase() !== 'FOC' && !koleksi.includes('GOODIE BAG') && !koleksi.includes('GOODIEBAG');
                         });
 
                         const getSalesHash = (r) => `${r.Tanggal}|${r['Nama Baju']}|${r.Variant}|${r.Source}|${r['Nama Customer']}|${r['Qty Terjual']}|${r.Revenue}`;
@@ -1399,21 +1443,38 @@
         }
 
         function updateSalesDashboard() {
-            let filtered = workingSalesData.filter(r => 
-                (cBrand === 'ALL' || r.Brand === cBrand) && 
+            const isIncludeOngkir = document.getElementById('toggleOngkir') ? document.getElementById('toggleOngkir').checked : false;
+
+            let filtered = workingSalesData.filter(r => {
+                const namaBaju = String(r['Nama Baju'] || '').toUpperCase();
+                if(!isIncludeOngkir && namaBaju.includes('ONGKIR')) return false;
+
+                return (cBrand === 'ALL' || r.Brand === cBrand) && 
                 (cPeriode.includes('ALL') || cPeriode.includes(r.Periode || 'Regular')) &&
                 (cCollection.includes('ALL') || cCollection.includes(r.Koleksi)) && 
                 (cSource === 'ALL' || r.Source === cSource) && 
                 (cBazaar === 'ALL' || r['Sales Tag'] === cBazaar) && 
                 (cYear.includes('ALL') || cYear.includes(getYear(r.Tanggal))) && 
-                (cMonth.includes('ALL') || cMonth.includes(getMonthName(r.Tanggal)))
-            );
+                (cMonth.includes('ALL') || cMonth.includes(getMonthName(r.Tanggal)));
+            });
+            
             currentSalesFilteredData = filtered;
 
             let showGrowth = false; let prevYearData = []; let prevLabel = "";
             if (cYear.length === 1 && cYear[0] !== 'ALL') {
                 const lastYear = (parseInt(cYear[0]) - 1).toString();
-                prevYearData = workingSalesData.filter(r => getYear(r.Tanggal) === lastYear && (cBrand === 'ALL' || r.Brand === cBrand) && (cPeriode.includes('ALL') || cPeriode.includes(r.Periode || 'Regular')) && (cCollection.includes('ALL') || cCollection.includes(r.Koleksi)) && (cSource === 'ALL' || r.Source === cSource) && (cBazaar === 'ALL' || r['Sales Tag'] === cBazaar) && (cMonth.includes('ALL') || cMonth.includes(getMonthName(r.Tanggal))));
+                prevYearData = workingSalesData.filter(r => {
+                    const namaBaju = String(r['Nama Baju'] || '').toUpperCase();
+                    if(!isIncludeOngkir && namaBaju.includes('ONGKIR')) return false;
+
+                    return getYear(r.Tanggal) === lastYear && 
+                    (cBrand === 'ALL' || r.Brand === cBrand) && 
+                    (cPeriode.includes('ALL') || cPeriode.includes(r.Periode || 'Regular')) && 
+                    (cCollection.includes('ALL') || cCollection.includes(r.Koleksi)) && 
+                    (cSource === 'ALL' || r.Source === cSource) && 
+                    (cBazaar === 'ALL' || r['Sales Tag'] === cBazaar) && 
+                    (cMonth.includes('ALL') || cMonth.includes(getMonthName(r.Tanggal)));
+                });
                 if (cMonth.includes('ALL')) { prevLabel = `Tahun ${lastYear}`; showGrowth = true; } else if (cMonth.length === 1) { prevLabel = `${cMonth[0]} ${lastYear}`; showGrowth = true; } else if (cMonth.length > 1) { prevLabel = `Periode Sama ${lastYear}`; showGrowth = true; }
             }
 
@@ -2122,7 +2183,8 @@ let uiK = `<span class="text-rose-400 font-bold uppercase text-[9px] bg-rose-50 
                     let infoHtml = `<div class="font-bold text-slate-700 text-sm flex justify-center items-center gap-1">${c.kirim}`;
                     if(c.kirim_history && c.kirim_history.length > 0) {
                         let tooltipText = 'Riwayat Perubahan:&#10;'; c.kirim_history.forEach(h => { const dStr = new Date(h.at).toLocaleString('id-ID'); tooltipText += `- ${dStr} | [${h.old_date}] -> [${h.new_date}] oleh [${h.by}]&#10;`; });
-                        infoHtml += `<i class="fas fa-history text-amber-500 cursor-help text-[10px]" title="${tooltipText}"></i>`;
+                        infoHtml += `
+class="fas fa-history text-amber-500 cursor-help text-[10px]" title="${tooltipText}"></i>`;
                     }
                     infoHtml += `</div><div class="text-[8.5px] text-slate-400 uppercase font-bold mt-0.5 tracking-wider">By: ${c.kirim_by}</div>`;
                     let editHtml = isGudang ? `<div class="mt-2 flex gap-1 justify-center items-center pt-2 border-t border-slate-100"><input type="date" id="input-kirim-${c.id}" value="${c.kirim}" class="text-[9px] border border-slate-200 rounded p-1 w-20"><button onclick="setTanggalGudang('${c.id}')" class="bg-amber-500 text-white text-[9px] px-2 py-1 rounded"><i class="fas fa-edit"></i></button></div>` : '';
@@ -2472,6 +2534,6 @@ let uiK = `<span class="text-rose-400 font-bold uppercase text-[9px] bg-rose-50 
             tbody.innerHTML = html;
         }
 
-        </script>
+    </script>
 </body>
 </html>
