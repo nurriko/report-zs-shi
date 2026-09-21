@@ -203,6 +203,7 @@
                     <span id="targetStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">Database Target: <span class="w-2 h-2 rounded-full bg-slate-300"></span> ❌</span>
                 </div>
         
+                <div id="salesSummaryBanner" class="hidden"></div>
                 <div id="filterArea" class="hidden space-y-6 mb-12">
                     <div class="bg-white/50 p-6 rounded-[32px] border border-white shadow-sm space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
@@ -226,6 +227,27 @@
                     </div>
                 </div>
         
+                <div id="yoyCompareSection" class="hidden mb-10">
+                    <div class="glass-card p-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Perbandingan Tahun ke Tahun</h3>
+                                <p id="yoyNote" class="text-[11px] text-slate-400 italic mt-2"></p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="yoyYtdToggle" checked onchange="toggleYoYYTD(this)" class="w-4 h-4 accent-indigo-600 rounded"> Periode sama (YTD)</label>
+                                <div class="flex bg-slate-100 rounded-xl p-1">
+                                    <button id="yoyBtnR" onclick="setYoYMetric('r')" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all">Revenue</button>
+                                    <button id="yoyBtnQ" onclick="setYoYMetric('q')" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all">Qty</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="yoyKpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
+                        <div style="height: 320px;"><canvas id="yoyChart"></canvas></div>
+                        <div id="yoyTable" class="mt-6 overflow-x-auto"></div>
+                    </div>
+                </div>
+
                 <div id="targetSection" class="glass-card p-8 mb-8 hidden">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                         <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Target vs Achievement</h3>
@@ -524,26 +546,19 @@
                             <div id="multiYearDropdown" class="absolute left-0 right-0 z-50 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-64 overflow-y-auto flex flex-col py-1"></div>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                        <div class="flex items-center gap-3"><div class="bg-rose-50 p-3 rounded-full text-rose-600"><i class="fas fa-trash-alt"></i></div><div><h3 class="font-bold text-slate-800">Hapus Data Tahunan</h3><p class="text-xs text-slate-500">Pilih tahun dan bulan untuk menghapus data secara permanen.</p></div></div>
-                        <div class="mt-2 flex gap-3">
-                            <select id="settingDeleteYearSelect" class="custom-select flex-1 bg-slate-50 border border-slate-200 py-3 px-4 rounded-xl text-sm font-bold focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer"><option value="">Pilih Tahun...</option></select>
-                            <select id="settingDeleteMonthSelect" class="custom-select flex-1 bg-slate-50 border border-slate-200 py-3 px-4 rounded-xl text-sm font-bold focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer">
-                                <option value="ALL">Semua Bulan</option>
-                                <option value="Januari">Januari</option>
-                                <option value="Februari">Februari</option>
-                                <option value="Maret">Maret</option>
-                                <option value="April">April</option>
-                                <option value="Mei">Mei</option>
-                                <option value="Juni">Juni</option>
-                                <option value="Juli">Juli</option>
-                                <option value="Agustus">Agustus</option>
-                                <option value="September">September</option>
-                                <option value="Oktober">Oktober</option>
-                                <option value="November">November</option>
-                                <option value="Desember">Desember</option>
-                            </select>
-                            <button onclick="deleteSpecificData()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 admin-only-feature">
+                        <div class="flex items-center gap-3"><div class="bg-rose-50 p-3 rounded-full text-rose-600"><i class="fas fa-trash-alt"></i></div><div><h3 class="font-bold text-slate-800">Hapus Data Tahunan</h3><p class="text-xs text-slate-500">Khusus Superadmin. Pilih satu atau lebih tahun dan bulan untuk menghapus data secara permanen.</p></div></div>
+                        <div class="mt-2 flex flex-col gap-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2"><p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Tahun (boleh lebih dari satu)</p><button type="button" onclick="delToggleAll('year')" class="text-[10px] font-bold text-indigo-500 hover:underline">Pilih / batal semua</button></div>
+                                <div id="delYearList" class="flex flex-wrap gap-2"><span class="text-xs text-slate-400 italic">Belum ada data.</span></div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">Bulan (boleh lebih dari satu)</p>
+                                <div id="delMonthList" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <p id="delPreview" class="text-xs font-bold text-slate-500 bg-slate-50 rounded-xl px-4 py-3">Pilih tahun untuk melihat pratinjau data yang akan dihapus.</p>
+                            <button onclick="deleteSpecificData()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Hapus Data Terpilih</button>
                         </div>
                     </div>
                 </div>
@@ -848,11 +863,19 @@
         }
 
         async function saveLargeArray(docPrefix, array) {
-            const jsonStr = JSON.stringify(array); const chunkSize = 500000; let chunks = [];
+            const jsonStr = JSON.stringify(array); const chunkSize = 300000; let chunks = [];
             for (let i = 0; i < jsonStr.length; i += chunkSize) { chunks.push(jsonStr.substring(i, i + chunkSize)); }
+            // 1) Tulis chunk baru dulu (menimpa chunk lama dengan ID sama) -> data lama tidak hilang jika gagal di tengah jalan
+            for (let i = 0; i < chunks.length; i += 10) {
+                const batch = db.batch();
+                chunks.slice(i, i + 10).forEach((c, k) => batch.set(db.collection('appData').doc(`${docPrefix}_${i + k}`), { type: docPrefix, index: i + k, data: c, total: chunks.length }));
+                await batch.commit();
+            }
+            // 2) Baru hapus sisa chunk lama yang index-nya melebihi jumlah chunk baru
             const oldDocs = await db.collection('appData').where('type', '==', docPrefix).get();
-            const deleteBatch = db.batch(); oldDocs.forEach(doc => deleteBatch.delete(doc.ref)); await deleteBatch.commit(); 
-            for(let i = 0; i < chunks.length; i++) { await db.collection('appData').doc(`${docPrefix}_${i}`).set({ type: docPrefix, index: i, data: chunks[i] }); }
+            const delBatch = db.batch(); let hasDel = false;
+            oldDocs.forEach(d => { if ((d.data().index || 0) >= chunks.length) { delBatch.delete(d.ref); hasDel = true; } });
+            if (hasDel) await delBatch.commit();
         }
 
         async function loadLargeArray(docPrefix) {
@@ -862,7 +885,7 @@
                 let chunks = []; docs.forEach(doc => chunks.push(doc.data()));
                 chunks.sort((a,b) => a.index - b.index);
                 const fullStr = chunks.map(c => c.data).join(''); return JSON.parse(fullStr);
-            } catch(e) { return []; }
+            } catch(e) { console.error('Gagal memuat', docPrefix, e); throw e; }
         }
 
         Chart.register(ChartDataLabels);
@@ -982,9 +1005,92 @@
             switchAuthView('login');
         }
 
+        // ===== RINGKASAN BULANAN TERSIMPAN + PEMUATAN BERTAHAP =====
+        // Ringkasan (Bulan x Brand x Source x Sales Tag x Koleksi x Periode) disimpan sebagai dokumen kecil di Firestore.
+        // Dashboard tampil cepat dari ringkasan, lalu data detail (per baris) diunduh di latar belakang.
+        let salesDetailReady = false, salesDetailError = false, salesSummary = null, salesSummaryRows = [], detailPromise = Promise.resolve();
+        const salesSource = () => salesDetailReady ? rawSalesData : salesSummaryRows;
+        const salesRowCount = () => salesDetailReady ? workingSalesData.length : workingSalesData.reduce((s, r) => s + (r._n || 0), 0);
+
+        function buildSalesSummary(rows) {
+            const map = new Map(); let totalRev = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i]; const y = getYear(r.Tanggal), mn = getMonthName(r.Tanggal);
+                const m = (y && mn) ? `${y}-${String(monthNames.indexOf(mn) + 1).padStart(2, '0')}` : '';
+                const o = String(r['Nama Baju'] || '').toUpperCase().includes('ONGKIR') ? 1 : 0;
+                const q = parseInt(r['Qty Terjual']) || 0, rev = parseFloat(r.Revenue) || 0;
+                const b = r.Brand ?? '', s = r.Source ?? '', t = r['Sales Tag'] ?? '', k = r.Koleksi ?? '', p = r.Periode ?? '';
+                const key = [m, b, s, t, k, p, o].join('\u0001');
+                let e = map.get(key); if (!e) { e = { m, b, s, t, k, p, o, q: 0, r: 0, n: 0 }; map.set(key, e); }
+                e.q += q; e.r += rev; e.n++; totalRev += rev;
+            }
+            return { v: 1, rows: rows.length, rev: Math.round(totalRev), cube: Array.from(map.values()) };
+        }
+        function expandSalesSummary(sm) {
+            return sm.cube.map(e => ({ Periode: e.p, Brand: e.b, Source: e.s, 'Sales Tag': e.t, Koleksi: e.k, Tanggal: e.m ? e.m + '-15' : '', 'Nama Baju': e.o ? 'ONGKIR' : '(ringkasan)', Variant: '', 'Nama Customer': '', 'Qty Terjual': e.q, Revenue: e.r, _n: e.n, _summary: true }));
+        }
+        async function saveSalesSummary() {
+            try { salesSummary = buildSalesSummary(rawSalesData); await saveLargeArray('salesSummary', salesSummary); }
+            catch (e) { console.error('Gagal menyimpan ringkasan (akan diperbaiki otomatis saat data dimuat berikutnya):', e); }
+        }
+        function showSalesBanner(text, isError) {
+            const b = document.getElementById('salesSummaryBanner'); if (!b) return;
+            b.innerText = text; b.className = 'mb-6 px-5 py-3 rounded-2xl text-xs font-bold border ' + (isError ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-700 border-amber-100');
+        }
+        function requireDetailReady() {
+            if (salesDetailReady) return true;
+            alert(salesDetailError ? 'Data detail gagal dimuat dari Cloud. Muat ulang halaman terlebih dahulu agar data lama tidak tertimpa.' : 'Data detail masih dimuat di latar belakang. Tunggu sampai banner kuning hilang, lalu coba lagi.');
+            return false;
+        }
+        function whenDetailReady(fn) {
+            if (salesDetailReady) { fn(); return; }
+            if (salesDetailError) { requireDetailReady(); return; }
+            const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = 'Memuat data detail...'; loader.classList.remove('hidden');
+            detailPromise.then(() => { loader.classList.add('hidden'); if (salesDetailReady) fn(); });
+        }
+        function refreshSalesStatus() {
+            const el = document.getElementById('salesStatus'); if (!el) return;
+            el.innerHTML = `Database Sales: <span class="text-emerald-500 font-extrabold">✅ ${salesRowCount().toLocaleString('id-ID')} baris</span>` + (salesDetailReady ? '' : ' <span class="text-[10px] text-amber-500 font-bold">(ringkasan)</span>');
+        }
+        function onSalesDetailReady() {
+            const b = document.getElementById('salesSummaryBanner'); if (b) b.classList.add('hidden');
+            workingSalesData = sysActiveYearFilter.includes('ALL') ? rawSalesData : rawSalesData.filter(r => sysActiveYearFilter.includes(getYear(r.Tanggal)));
+            refreshSalesStatus(); updateSalesDateRange();
+            const salesTab = document.getElementById('app-sales');
+            if (workingSalesData.length > 0 && salesTab && !salesTab.classList.contains('hidden')) { try { updateSalesDashboard(); } catch (e) { console.error(e); } }
+            try { populateSettingsDropdowns(); } catch (e) { console.error(e); }
+        }
+        async function loadSalesDetail() {
+            try {
+                rawSalesData = await loadLargeArray('sales');
+                inventory = await loadLargeArray('inventory');
+                salesDetailReady = true;
+                const chk = buildSalesSummary(rawSalesData);
+                if (!salesSummary || chk.rows !== salesSummary.rows || Math.abs(chk.rev - salesSummary.rev) > 1) {
+                    salesSummary = chk; try { await saveLargeArray('salesSummary', chk); } catch (e) { console.error(e); }
+                }
+                onSalesDetailReady();
+            } catch (e) { salesDetailError = true; console.error('Gagal memuat detail:', e); showSalesBanner('⚠️ Data detail gagal dimuat. Muat ulang halaman sebelum upload/hapus data.', true); }
+        }
+
         async function loadLargeData() {
-            const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = "Mengunduh Database dari Cloud..."; loader.classList.remove('hidden');
-            try { rawSalesData = await loadLargeArray('sales'); rawTargetData = await loadLargeArray('targets'); inventory = await loadLargeArray('inventory'); } catch (err) { console.error("Gagal memuat:", err); }
+            const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = "Mengunduh ringkasan dari Cloud..."; loader.classList.remove('hidden');
+            salesDetailReady = false; salesDetailError = false; salesSummary = null; salesSummaryRows = [];
+            { const _b = document.getElementById('salesSummaryBanner'); if (_b) _b.classList.add('hidden'); }
+            try {
+                rawTargetData = await loadLargeArray('targets');
+                const sm = await loadLargeArray('salesSummary');
+                if (sm && !Array.isArray(sm) && sm.v === 1 && Array.isArray(sm.cube) && sm.cube.length > 0) {
+                    salesSummary = sm; salesSummaryRows = expandSalesSummary(sm);
+                    showSalesBanner('⏳ Menampilkan data ringkasan. Detail produk, pelanggan & harian sedang dimuat di latar belakang...');
+                    detailPromise = loadSalesDetail();
+                } else {
+                    document.getElementById('loadingText').innerText = "Mengunduh Database dari Cloud...";
+                    rawSalesData = await loadLargeArray('sales'); inventory = await loadLargeArray('inventory');
+                    salesDetailReady = true;
+                    if (rawSalesData.length > 0) saveSalesSummary();
+                }
+            } catch (err) { salesDetailError = true; console.error("Gagal memuat:", err); alert("Gagal mengunduh data dari Cloud. Muat ulang halaman sebelum upload/hapus data agar data lama tidak tertimpa."); }
             loader.classList.add('hidden');
         }
 
@@ -1004,12 +1110,12 @@
             const activeNav = document.getElementById('nav-' + tab);
             if(activeNav) { activeNav.classList.remove('text-slate-500'); activeNav.classList.add('bg-indigo-50', 'text-indigo-600'); }
 
-            if(tab === 'inventory') { populateGlobalFilters(); refreshInvApp(); }
+            if(tab === 'inventory') { whenDetailReady(() => { populateGlobalFilters(); refreshInvApp(); }); }
             if(tab === 'users') { renderUserManagement(); }
             if(tab === 'settings') { populateSettingsDropdowns(); }
-            if(tab === 'sales') { if(rawSalesData.length > 0) { initSalesUI(); } }
+            if(tab === 'sales') { if(salesSource().length > 0) { initSalesUI(); } }
             if(tab === 'launching') { initLaunchingApp(); }
-            if(tab === 'movement') { renderMovementApp(); }
+            if(tab === 'movement') { whenDetailReady(renderMovementApp); }
         }
 
         function togglePassword(inputId, iconElement) {
@@ -1107,8 +1213,9 @@
                 let actionBtn;
                 if(isAdm) { actionBtn = `<span class="text-slate-400 text-[10px] italic">No Action Needed</span>`; } 
                 else {
-                    let resetBtn = u.mustChangePassword ? `<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block mr-2"><i class="fas fa-clock mr-1"></i>Menunggu Pass Baru</span>` : `<button onclick="doResetPassword('${u.username}')" class="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all mr-2"><i class="fas fa-key mr-1"></i>Reset</button>`;
-                    let deleteBtn = `<button onclick="doDeleteUser('${u.username}')" title="Hapus User" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all"><i class="fas fa-trash-alt"></i></button>`;
+                    const safeUsername = String(u.username).replace(/'/g, "\\'");
+                    let resetBtn = u.mustChangePassword ? `<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block mr-2"><i class="fas fa-clock mr-1"></i>Menunggu Pass Baru</span>` : `<button onclick="doResetPassword('${safeUsername}')" class="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all mr-2"><i class="fas fa-key mr-1"></i>Reset</button>`;
+                    let deleteBtn = `<button onclick="doDeleteUser('${safeUsername}')" title="Hapus User" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all"><i class="fas fa-trash-alt"></i></button>`;
                     actionBtn = `<div class="flex justify-end items-center">${resetBtn}${deleteBtn}</div>`;
                 }
                 return `<tr><td class="p-4 font-bold text-slate-700">${u.username}</td><td class="p-4 text-center">${roleBadge}</td><td class="p-4 text-center">${reqBadge}</td><td class="p-4 text-right">${actionBtn}</td></tr>`;
@@ -1146,7 +1253,7 @@
             sysActiveYearFilter = Array.from(document.querySelectorAll('.year-checkbox:checked')).map(cb => cb.value);
             await saveDocStr('activeYears', sysActiveYearFilter);
             
-            updateMultiYearText(); if(rawSalesData.length > 0) initSalesUI();
+            updateMultiYearText(); if(salesSource().length > 0) initSalesUI();
         }
 
         function updateMultiYearText() {
@@ -1157,11 +1264,11 @@
         }
 
         function populateSettingsDropdowns() {
-            let salesYears = rawSalesData.map(r => getYear(r.Tanggal)).filter(y => y !== null);
+            let salesYears = salesSource().map(r => getYear(r.Tanggal)).filter(y => y !== null);
             let targetYears = rawTargetData.map(t => String(t.Tahun).trim());
             let allYears = [...new Set([...salesYears, ...targetYears])].sort().reverse();
             
-            const filterDropdown = document.getElementById('multiYearDropdown'), deleteSelect = document.getElementById('settingDeleteYearSelect');
+            const filterDropdown = document.getElementById('multiYearDropdown');
             
             if (filterDropdown) {
                 let html = `<label class="flex items-center px-4 py-3 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-100 font-bold transition-colors"><input type="checkbox" value="ALL" class="year-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleYearCheckboxChange(this)" ${sysActiveYearFilter.includes('ALL') ? 'checked' : ''}><span>Semua Tahun</span></label>`;
@@ -1171,65 +1278,97 @@
                 });
                 filterDropdown.innerHTML = html; updateMultiYearText();
             }
-            if (deleteSelect) { deleteSelect.innerHTML = `<option value="">Pilih Tahun untuk dihapus...</option>` + allYears.map(y => `<option value="${y}">Tahun ${y}</option>`).join(''); }
+            renderDeleteYearList(allYears);
         }
 
+        // ===== HAPUS DATA MULTI TAHUN & MULTI BULAN (Superadmin) =====
+        const delChipClass = 'flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 cursor-pointer hover:bg-rose-50 hover:border-rose-200 transition-all select-none';
+        function renderDeleteYearList(allYears) {
+            const box = document.getElementById('delYearList'); if (!box) return;
+            const prev = new Set([...document.querySelectorAll('.del-year:checked')].map(c => c.value));
+            box.innerHTML = allYears.length === 0 ? '<span class="text-xs text-slate-400 italic">Belum ada data.</span>' : allYears.map(y => `<label class="${delChipClass}"><input type="checkbox" class="del-year accent-rose-500 w-4 h-4" value="${y}" ${prev.has(y) ? 'checked' : ''} onchange="delUpdatePreview()"> ${y}</label>`).join('');
+            renderDeleteMonthList(); delUpdatePreview();
+        }
+        function renderDeleteMonthList() {
+            const box = document.getElementById('delMonthList'); if (!box || box.children.length > 0) return;
+            box.innerHTML = `<label class="${delChipClass}"><input type="checkbox" class="del-month accent-rose-500 w-4 h-4" value="ALL" checked onchange="delMonthChange(this)"> Semua Bulan</label>` +
+                monthNames.map(m => `<label class="${delChipClass}"><input type="checkbox" class="del-month accent-rose-500 w-4 h-4" value="${m}" onchange="delMonthChange(this)"> ${m}</label>`).join('');
+        }
+        function delMonthChange(cb) {
+            const all = document.querySelector('.del-month[value="ALL"]'), others = [...document.querySelectorAll('.del-month')].filter(c => c.value !== 'ALL');
+            if (cb.value === 'ALL') { if (cb.checked) others.forEach(c => c.checked = false); else cb.checked = true; }
+            else { if (cb.checked) all.checked = false; else if (!others.some(c => c.checked)) all.checked = true; }
+            delUpdatePreview();
+        }
+        function delToggleAll(kind) {
+            const boxes = [...document.querySelectorAll('.del-year')]; if (boxes.length === 0) return;
+            const target = !boxes.every(c => c.checked); boxes.forEach(c => c.checked = target); delUpdatePreview();
+        }
+        function getDeleteSelection() {
+            const years = [...document.querySelectorAll('.del-year:checked')].map(c => c.value);
+            const allMonths = document.querySelector('.del-month[value="ALL"]');
+            const months = (!allMonths || allMonths.checked) ? ['ALL'] : [...document.querySelectorAll('.del-month:checked')].map(c => c.value);
+            return { years, months, monthSet: new Set(months.map(normalizeMonth)) };
+        }
+        const delMatchSales = (r, sel) => { const y = getYear(r.Tanggal); if (!y || !sel.years.includes(y)) return false; return sel.months[0] === 'ALL' || sel.monthSet.has(normalizeMonth(getMonthName(r.Tanggal))); };
+        const delMatchTarget = (t, sel) => { if (!sel.years.includes(String(t.Tahun).trim())) return false; return sel.months[0] === 'ALL' || sel.monthSet.has(normalizeMonth(t.Bulan)); };
+        function delUpdatePreview() {
+            const el = document.getElementById('delPreview'); if (!el) return;
+            const sel = getDeleteSelection();
+            if (sel.years.length === 0) { el.className = 'text-xs font-bold text-slate-500 bg-slate-50 rounded-xl px-4 py-3'; el.innerText = 'Pilih tahun untuk melihat pratinjau data yang akan dihapus.'; return; }
+            if (!salesDetailReady) { el.className = 'text-xs font-bold text-amber-600 bg-amber-50 rounded-xl px-4 py-3'; el.innerText = '⏳ Menunggu data detail selesai dimuat untuk menghitung pratinjau...'; return; }
+            const nS = rawSalesData.filter(r => delMatchSales(r, sel)).length, nT = rawTargetData.filter(t => delMatchTarget(t, sel)).length;
+            el.className = 'text-xs font-bold text-rose-600 bg-rose-50 rounded-xl px-4 py-3';
+            el.innerText = `Akan menghapus ${nS.toLocaleString('id-ID')} baris Sales & ${nT.toLocaleString('id-ID')} baris Target — Tahun: ${sel.years.join(', ')} | Bulan: ${sel.months[0] === 'ALL' ? 'Semua' : sel.months.join(', ')}`;
+        }
         async function deleteSpecificData() {
-            const yearToDelete = document.getElementById('settingDeleteYearSelect').value;
-            const monthToDelete = document.getElementById('settingDeleteMonthSelect').value;
-            
-            if(!yearToDelete) { alert('Silakan pilih tahun yang ingin dihapus terlebih dahulu.'); return; }
-            
-            let confirmMsg = `PERINGATAN!\n\nApakah Anda yakin ingin menghapus data Sales dan Target untuk TAHUN ${yearToDelete}`;
-            if(monthToDelete !== 'ALL') confirmMsg += ` BULAN ${monthToDelete.toUpperCase()}`;
-            confirmMsg += ` di Firebase?\nData yang terhapus tidak dapat dikembalikan.`;
-            
-            if(confirm(confirmMsg)) {
-                const loader = document.getElementById('globalLoading'); 
-                document.getElementById('loadingText').innerText = "Menghapus Data dari Cloud..."; 
-                loader.classList.remove('hidden');
-                
-                if (monthToDelete === 'ALL') {
-                    rawSalesData = rawSalesData.filter(r => getYear(r.Tanggal) !== yearToDelete); 
-                    rawTargetData = rawTargetData.filter(t => String(t.Tahun).trim() !== yearToDelete);
-                } else {
-                    rawSalesData = rawSalesData.filter(r => !(getYear(r.Tanggal) === yearToDelete && normalizeMonth(getMonthName(r.Tanggal)) === normalizeMonth(monthToDelete)));
-                    rawTargetData = rawTargetData.filter(t => !(String(t.Tahun).trim() === yearToDelete && normalizeMonth(t.Bulan) === normalizeMonth(monthToDelete)));
-                }
+            if (!currentUser || currentUser.role !== 'admin') { alert('Hanya Superadmin yang dapat menghapus data.'); return; }
+            if (!requireDetailReady()) return;
+            const sel = getDeleteSelection();
+            if (sel.years.length === 0) { alert('Silakan pilih minimal satu tahun yang ingin dihapus terlebih dahulu.'); return; }
+            const nS = rawSalesData.filter(r => delMatchSales(r, sel)).length, nT = rawTargetData.filter(t => delMatchTarget(t, sel)).length;
+            if (nS === 0 && nT === 0) { alert('Tidak ada data Sales/Target yang cocok dengan pilihan tersebut.'); return; }
+            const monthTxt = sel.months[0] === 'ALL' ? 'SEMUA BULAN' : sel.months.join(', ').toUpperCase();
+            const typed = prompt(`PERINGATAN!\n\nAnda akan menghapus PERMANEN dari Firebase:\n• Tahun : ${sel.years.join(', ')}\n• Bulan : ${monthTxt}\n• ${nS.toLocaleString('id-ID')} baris Sales & ${nT.toLocaleString('id-ID')} baris Target\n\nData yang terhapus tidak dapat dikembalikan.\nKetik HAPUS untuk melanjutkan:`);
+            if (typed === null) return;
+            if (typed.trim().toUpperCase() !== 'HAPUS') { alert('Penghapusan dibatalkan karena konfirmasi tidak sesuai.'); return; }
 
-                try {
-                    await saveLargeArray('sales', rawSalesData); 
-                    await saveLargeArray('targets', rawTargetData);
-                    
-                    if (monthToDelete === 'ALL' && sysActiveYearFilter.includes(yearToDelete)) {
-                        sysActiveYearFilter = sysActiveYearFilter.filter(y => y !== yearToDelete);
-                        if(sysActiveYearFilter.length === 0) sysActiveYearFilter = ['ALL'];
-                        await saveDocStr('activeYears', sysActiveYearFilter);
-                    }
-                    
-                    alert(`Data historis berhasil dihapus dari Cloud!`);
-                    populateSettingsDropdowns(); 
-                    initSalesUI();
-                } catch(e) { 
-                    alert('Gagal menghapus data dari Cloud Database.'); 
-                } finally { 
-                    loader.classList.add('hidden'); 
+            const loader = document.getElementById('globalLoading');
+            document.getElementById('loadingText').innerText = "Menghapus Data dari Cloud..."; loader.classList.remove('hidden');
+            const backupSales = rawSalesData, backupTargets = rawTargetData, backupActive = [...sysActiveYearFilter];
+            rawSalesData = rawSalesData.filter(r => !delMatchSales(r, sel));
+            rawTargetData = rawTargetData.filter(t => !delMatchTarget(t, sel));
+            try {
+                await saveLargeArray('sales', rawSalesData); await saveSalesSummary();
+                await saveLargeArray('targets', rawTargetData);
+                if (sel.months[0] === 'ALL' && sysActiveYearFilter.some(y => sel.years.includes(y))) {
+                    sysActiveYearFilter = sysActiveYearFilter.filter(y => !sel.years.includes(y));
+                    if (sysActiveYearFilter.length === 0) sysActiveYearFilter = ['ALL'];
+                    await saveDocStr('activeYears', sysActiveYearFilter);
                 }
-            }
+                alert(`Berhasil menghapus ${nS.toLocaleString('id-ID')} baris Sales & ${nT.toLocaleString('id-ID')} baris Target dari Cloud!`);
+                document.querySelectorAll('.del-year').forEach(c => c.checked = false);
+                populateSettingsDropdowns(); initSalesUI();
+            } catch (e) {
+                console.error(e);
+                rawSalesData = backupSales; rawTargetData = backupTargets; sysActiveYearFilter = backupActive;
+                alert('Gagal menghapus data dari Cloud Database. Muat ulang halaman untuk memastikan tampilan sinkron dengan Cloud.');
+            } finally { loader.classList.add('hidden'); }
         }
 
         const limitWords = (str) => { if (!str) return ''; const words = String(str).split(' '); return words.length > 2 ? words.slice(0, 2).join(' ') + '..' : str; };
         const getOnlyName = (fullStr) => { if (!fullStr) return ''; return fullStr.split('(')[0].trim(); };
         const extractCity = (str) => { if (!str) return 'N/A'; const words = String(str).trim().split(' '); return words[words.length - 1]; };
-        function getYear(dateStr) { const d = new Date(dateStr); return isNaN(d) ? null : d.getFullYear().toString(); }
-        function getMonthName(dateStr) { const d = new Date(dateStr); return isNaN(d) ? null : monthNames[d.getMonth()]; }
+        const _yearCache = new Map(); function getYear(dateStr) { if (_yearCache.has(dateStr)) return _yearCache.get(dateStr); const d = new Date(dateStr); const v = isNaN(d) ? null : d.getFullYear().toString(); _yearCache.set(dateStr, v); return v; }
+        const _monthCache = new Map(); function getMonthName(dateStr) { if (_monthCache.has(dateStr)) return _monthCache.get(dateStr); const d = new Date(dateStr); const v = isNaN(d) ? null : monthNames[d.getMonth()]; _monthCache.set(dateStr, v); return v; }
         const normalizeStr = (str) => String(str || '').trim().toUpperCase();
 
         function updateSalesDateRange() {
+            if (!salesDetailReady) { const bd = document.getElementById('salesDateRangeBadge'); if (bd) bd.classList.add('hidden'); return; }
             if(workingSalesData.length > 0) {
                 let dates = workingSalesData.map(r => new Date(r.Tanggal)).filter(d => !isNaN(d));
                 if(dates.length > 0) {
-                    let minDate = new Date(Math.min(...dates)), maxDate = new Date(Math.max(...dates));
+                    let minT = Infinity, maxT = -Infinity; for (let i = 0; i < dates.length; i++) { const t = dates[i].getTime(); if (t < minT) minT = t; if (t > maxT) maxT = t; } let minDate = new Date(minT), maxDate = new Date(maxT);
                     const formatDateStr = (d) => { const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; return `${String(d.getDate()).padStart(2,'0')} ${m[d.getMonth()]} ${d.getFullYear()}`; };
                     document.getElementById('salesDateRangeDisplay').innerText = `Periode: ${formatDateStr(minDate)} s/d ${formatDateStr(maxDate)}`; document.getElementById('salesDateRangeBadge').classList.remove('hidden');
                 }
@@ -1245,6 +1384,7 @@
 
         function handleExcelUpload(input) {
             const file = input.files[0]; if(!file) return;
+            if (!requireDetailReady()) { input.value = ''; return; }
             const loader = document.getElementById('globalLoading'); document.getElementById('loadingText').innerText = "Menyinkronkan ke Cloud Firebase..."; loader.classList.remove('hidden');
             setTimeout(() => {
                 const reader = new FileReader();
@@ -1314,7 +1454,7 @@
                         });
 
                         try {
-                            await saveLargeArray('sales', rawSalesData); await saveLargeArray('targets', rawTargetData);
+                            await saveLargeArray('sales', rawSalesData); await saveSalesSummary(); await saveLargeArray('targets', rawTargetData);
                             alert(`Sinkronisasi Cloud Berhasil!\n\n- ${addedSales.toLocaleString('id-ID')} Transaksi Baru.\n- ${addedTargets} Target Baru.\n- ${updatedTargets} Target Diperbarui.`);
                         } catch(storageError) { alert("🛑 GAGAL MENYIMPAN KE CLOUD! Periksa koneksi internet Anda."); }
                         populateSettingsDropdowns(); initSalesUI();
@@ -1325,28 +1465,29 @@
         }
 
         async function resetSalesData() {
+            if (!requireDetailReady()) return;
             if(confirm('Hapus seluruh database Sales dan Target secara permanen DARI CLOUD?')) {
-                await saveLargeArray('sales', []); await saveLargeArray('targets', []);
+                await saveLargeArray('sales', []); await saveLargeArray('targets', []); await saveLargeArray('salesSummary', []); salesSummary = null; salesSummaryRows = [];
                 rawSalesData = []; rawTargetData = []; workingSalesData = []; workingTargetData = [];
-                document.getElementById('salesDateRangeBadge').classList.add('hidden'); document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none'; document.getElementById('growthSection').classList.add('hidden');
+                document.getElementById('salesDateRangeBadge').classList.add('hidden'); document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none'; document.getElementById('growthSection').classList.add('hidden'); { const _y = document.getElementById('yoyCompareSection'); if (_y) _y.classList.add('hidden'); }
                 alert('Data Sales berhasil dihapus sepenuhnya dari Database Cloud!');
             }
         }
 
         function initSalesUI() {
-            workingSalesData = sysActiveYearFilter.includes('ALL') ? rawSalesData : rawSalesData.filter(r => sysActiveYearFilter.includes(getYear(r.Tanggal)));
+            workingSalesData = sysActiveYearFilter.includes('ALL') ? salesSource() : salesSource().filter(r => sysActiveYearFilter.includes(getYear(r.Tanggal)));
             workingTargetData = sysActiveYearFilter.includes('ALL') ? rawTargetData : rawTargetData.filter(t => sysActiveYearFilter.includes(String(t.Tahun).trim()));
 
             if(workingSalesData.length > 0 || rawTargetData.length > 0) {
                 document.getElementById('fileStatus').classList.remove('hidden');
-                document.getElementById('salesStatus').innerHTML = `Database Sales: <span class="text-emerald-500 font-extrabold">✅ ${workingSalesData.length.toLocaleString('id-ID')} baris</span>`;
+                refreshSalesStatus();
                 document.getElementById('targetStatus').innerHTML = `Database Target: <span class="text-emerald-500 font-extrabold">${workingTargetData.length > 0 ? '✅ '+workingTargetData.length.toLocaleString('id-ID')+' baris' : '❌ Kosong'}</span>`;
                 if(workingSalesData.length > 0) { document.getElementById('filterArea').classList.remove('hidden'); document.getElementById('targetSection').classList.remove('hidden'); document.getElementById('chartsArea').style.display = 'grid'; }
                 
                 cBrand = 'ALL'; cSource = 'ALL'; cBazaar = 'ALL'; cMonth = ['ALL']; cYear = ['ALL']; cCollection = ['ALL']; cPeriode = ['ALL'];
-                updateSalesDateRange(); renderSalesFilterButtons(); updateSalesDashboard();
+                try { updateSalesDateRange(); renderSalesFilterButtons(); updateSalesDashboard(); } catch (err) { console.error('Dashboard error:', err); alert('Dashboard gagal dirender: ' + err.message); }
             } else {
-                document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none'; document.getElementById('growthSection').classList.add('hidden');
+                document.getElementById('fileStatus').classList.add('hidden'); document.getElementById('filterArea').classList.add('hidden'); document.getElementById('targetSection').classList.add('hidden'); document.getElementById('chartsArea').style.display = 'none'; document.getElementById('growthSection').classList.add('hidden'); { const _y = document.getElementById('yoyCompareSection'); if (_y) _y.classList.add('hidden'); }
             }
         }
 
@@ -1385,7 +1526,8 @@
 
         function renderSalesFilterButtons() {
             const getUnique = (key) => ['ALL', ...new Set(workingSalesData.map(r => String(r[key] || '').trim()))].filter(v => v !== 'undefined' && v !== '');
-            document.getElementById('brandList').innerHTML = getUnique('Brand').map(b => `<button onclick="applySalesFilter('brand','${b}')" class="filter-btn ${b===cBrand?'active':''}">${b}</button>`).join('');
+            const escAttr = (s) => String(s).replace(/'/g, "\\'");
+            document.getElementById('brandList').innerHTML = getUnique('Brand').map(b => `<button onclick="applySalesFilter('brand','${escAttr(b)}')" class="filter-btn ${b===cBrand?'active':''}">${b}</button>`).join('');
             
             const periodes = ['ALL', ...new Set(workingSalesData.map(r => String(r.Periode || 'Regular').trim()))].filter(v => v !== '');
             let perHtml = `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 font-bold transition-colors"><input type="checkbox" value="ALL" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Periode', this)" ${cPeriode.includes('ALL') ? 'checked' : ''}> <span class="text-xs">Semua Periode</span></label>`;
@@ -1409,7 +1551,7 @@
             monthsInYear.filter(m => m !== 'ALL').forEach(m => { monthHtml += `<label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs font-medium text-slate-700 transition-colors"><input type="checkbox" value="${m}" class="multi-checkbox mr-3 rounded accent-indigo-600 w-4 h-4 cursor-pointer" onchange="handleSalesMulti('Month', this)" ${cMonth.includes(m) ? 'checked' : ''}> <span class="truncate">${m}</span></label>`; });
             document.getElementById('multiMonthSalesDropdown').innerHTML = monthHtml; updateSalesMultiText('Month');
 
-            document.getElementById('sourceList').innerHTML = getUnique('Source').map(s => `<button onclick="applySalesFilter('source','${s}')" class="filter-btn ${s===cSource?'active':''}">${s}</button>`).join('');
+            document.getElementById('sourceList').innerHTML = getUnique('Source').map(s => `<button onclick="applySalesFilter('source','${escAttr(s)}')" class="filter-btn ${s===cSource?'active':''}">${s}</button>`).join('');
             
             const bazaarArea = document.getElementById('bazaarDropdownArea');
             if (cSource === 'BAZAAR') { 
@@ -1431,6 +1573,79 @@
         }
 
         function applySalesBazaarFilter(val) { cBazaar = val; updateSalesDashboard(); }
+
+        // ===== PERBANDINGAN TAHUN KE TAHUN (YoY) =====
+        let yoyMetric = 'r', yoyYTD = true, yoyLastFiltered = [], yoyChartInstance = null;
+        function setYoYMetric(m) { yoyMetric = m; renderYoYComparison(yoyLastFiltered); }
+        function toggleYoYYTD(cb) { yoyYTD = cb.checked; renderYoYComparison(yoyLastFiltered); }
+        function renderYoYComparison(filtered) {
+            yoyLastFiltered = filtered;
+            const sec = document.getElementById('yoyCompareSection'); if (!sec) return;
+            const byYear = {};
+            for (let i = 0; i < filtered.length; i++) {
+                const r = filtered[i]; const y = getYear(r.Tanggal), mn = getMonthName(r.Tanggal);
+                if (!y || !mn) continue;
+                const mi = monthNames.indexOf(mn);
+                if (!byYear[y]) byYear[y] = Array.from({ length: 12 }, () => ({ q: 0, r: 0, n: 0 }));
+                const c = byYear[y][mi]; c.q += parseInt(r['Qty Terjual']) || 0; c.r += parseFloat(r.Revenue) || 0; c.n++;
+            }
+            const years = Object.keys(byYear).sort();
+            if (years.length < 2) { sec.classList.add('hidden'); if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; } return; }
+            sec.classList.remove('hidden');
+
+            const latest = years[years.length - 1], prevY = years[years.length - 2];
+            let lastMonth = -1; byYear[latest].forEach((c, i) => { if (c.n > 0) lastMonth = i; });
+            const maxM = yoyYTD ? Math.max(lastMonth, 0) : 11;
+            const months = []; for (let i = 0; i <= maxM; i++) { if (years.some(y => byYear[y][i].n > 0)) months.push(i); }
+
+            const tot = {}; years.forEach(y => { tot[y] = { q: 0, r: 0 }; months.forEach(i => { tot[y].q += byYear[y][i].q; tot[y].r += byYear[y][i].r; }); });
+            const fmtVal = (v, m) => m === 'r' ? formatRupiah(v) : Math.round(v).toLocaleString('id-ID') + ' pcs';
+            const pct = (cur, prev) => prev > 0 ? ((cur - prev) / prev * 100) : null;
+            const badge = (label, p) => {
+                if (p === null) return `<span class="text-[10px] font-extrabold px-2 py-1 rounded-lg bg-indigo-50 text-indigo-500">${label} Baru</span>`;
+                const up = p >= 0;
+                return `<span class="text-[10px] font-extrabold px-2 py-1 rounded-lg ${up ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${label} ${up ? '▲ +' : '▼ −'}${Math.abs(p).toFixed(1)}%</span>`;
+            };
+
+            document.getElementById('yoyNote').innerText = yoyYTD
+                ? `Membandingkan periode yang sama untuk semua tahun (sampai ${monthNames[Math.max(lastMonth, 0)]} ${latest}).`
+                : 'Membandingkan seluruh bulan yang memiliki data (tahun berjalan mungkin belum lengkap).';
+            document.getElementById('yoyBtnR').className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all ' + (yoyMetric === 'r' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500');
+            document.getElementById('yoyBtnQ').className = 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all ' + (yoyMetric === 'q' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500');
+
+            document.getElementById('yoyKpis').innerHTML = years.map((y, idx) => {
+                const color = brandColors[idx % brandColors.length];
+                const prev = idx > 0 ? tot[years[idx - 1]] : null;
+                const badges = prev ? badge('Rev', pct(tot[y].r, prev.r)) + ' ' + badge('Qty', pct(tot[y].q, prev.q)) : '<span class="text-[10px] font-bold text-slate-400">Tahun dasar perbandingan</span>';
+                return `<div class="bg-slate-50 p-5 rounded-2xl border border-slate-100"><p class="text-[10px] font-extrabold uppercase tracking-widest" style="color:${color}">Tahun ${y}</p><p class="text-xl font-black text-slate-800 mt-1">${formatRupiah(tot[y].r)}</p><p class="text-xs text-slate-500 font-bold mt-1">${tot[y].q.toLocaleString('id-ID')} pcs</p><div class="mt-3 flex gap-2 flex-wrap">${badges}</div></div>`;
+            }).join('');
+
+            if (yoyChartInstance) yoyChartInstance.destroy();
+            yoyChartInstance = new Chart(document.getElementById('yoyChart'), {
+                type: 'bar',
+                data: {
+                    labels: months.map(i => monthNames[i].substring(0, 3)),
+                    datasets: years.map((y, idx) => ({ label: y, data: months.map(i => byYear[y][i][yoyMetric]), backgroundColor: brandColors[idx % brandColors.length], borderRadius: 6 }))
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { datalabels: { display: false }, legend: { position: 'top' }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmtVal(c.parsed.y, yoyMetric)}` } } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => yoyMetric === 'r' ? (v >= 1e9 ? (v / 1e9) + ' M' : v >= 1e6 ? (v / 1e6) + ' jt' : v) : v } } }
+                }
+            });
+
+            const deltaCell = (cur, prev) => {
+                const p = pct(cur, prev);
+                if (p === null) return cur > 0 ? '<span class="text-indigo-500 font-bold">Baru</span>' : '<span class="text-slate-300">-</span>';
+                return `<span class="font-extrabold ${p >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(1)}%</span>`;
+            };
+            let html = `<table class="w-full text-sm"><thead><tr class="text-left text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-100"><th class="py-3 pr-4">Bulan</th>${years.map(y => `<th class="py-3 px-4 text-right">${y}</th>`).join('')}<th class="py-3 pl-4 text-right">${latest} vs ${prevY}</th></tr></thead><tbody>`;
+            months.forEach(i => {
+                html += `<tr class="border-b border-slate-50 hover:bg-slate-50"><td class="py-3 pr-4 font-bold text-slate-700">${monthNames[i]}</td>${years.map(y => `<td class="py-3 px-4 text-right text-slate-600">${fmtVal(byYear[y][i][yoyMetric], yoyMetric)}</td>`).join('')}<td class="py-3 pl-4 text-right">${deltaCell(byYear[latest][i][yoyMetric], byYear[prevY][i][yoyMetric])}</td></tr>`;
+            });
+            html += `<tr class="bg-slate-50 font-black text-slate-800"><td class="py-3 pr-4">Total</td>${years.map(y => `<td class="py-3 px-4 text-right">${fmtVal(tot[y][yoyMetric], yoyMetric)}</td>`).join('')}<td class="py-3 pl-4 text-right">${deltaCell(tot[latest][yoyMetric], tot[prevY][yoyMetric])}</td></tr></tbody></table>`;
+            document.getElementById('yoyTable').innerHTML = html;
+        }
 
         function calculateGrowthUI(current, prev, elementId, prevYearLabel) {
             const el = document.getElementById(elementId), iconEl = document.getElementById(elementId + 'Icon'), txtEl = document.getElementById(elementId === 'qtyGrowth' ? 'qtyCompareText' : 'revCompareText');
@@ -1482,7 +1697,8 @@
                 calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseInt(r['Qty Terjual']) || 0), 0), 'qtyGrowth', prevLabel);
                 calculateGrowthUI(filtered.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), prevYearData.reduce((sum, r) => sum + (parseFloat(r.Revenue) || 0), 0), 'revGrowth', prevLabel);
                 document.getElementById('growthSection').classList.remove('hidden');
-            } else { document.getElementById('growthSection').classList.add('hidden'); }
+            } else { document.getElementById('growthSection').classList.add('hidden'); { const _y = document.getElementById('yoyCompareSection'); if (_y) _y.classList.add('hidden'); } }
+            try { renderYoYComparison(filtered); } catch (e) { console.error('YoY error:', e); }
 
             let filteredTarget = workingTargetData.filter(t => 
                 (cBrand === 'ALL' || String(t.Brand||'').trim().toUpperCase() === String(cBrand).trim().toUpperCase()) && 
@@ -1518,10 +1734,11 @@
                 if(!agg.brands[brand]) agg.brands[brand] = {q:0, r:0}; agg.brands[brand].q += qty; agg.brands[brand].r += rev;
                 const cust = r['Nama Customer'] || 'N/A'; if(!agg.customers[cust]) agg.customers[cust] = {q:0, r:0}; agg.customers[cust].q += qty; agg.customers[cust].r += rev;
             });
+            if (!salesDetailReady) { agg.products = {}; agg.customers = {}; agg.timeline = {}; }
             renderSalesCharts(agg, isAnnual);
         }
 
-        function handleCardClick(event, type) { if (event.target.tagName.toLowerCase() !== 'canvas') openSalesModal(type); }
+        function handleCardClick(event, type) { if (event.target.tagName.toLowerCase() !== 'canvas') { if (!requireDetailReady()) return; openSalesModal(type); } }
 
         function renderSalesCharts(agg, isAnnual) {
             Object.values(salesCharts).forEach(c => c.destroy());
@@ -1561,7 +1778,12 @@
             }
 
             let trendData = []; const titleEl = document.getElementById('trendTitle');
+            const abbrMonthsTrend = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+            const trendLabelSortKey = (label) => { const parts = String(label).split('-'); return (parseInt(parts[1]) || 0) * 12 + abbrMonthsTrend.indexOf(parts[0]); };
             if (cYear.includes('ALL')) { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Monthly Performance (Filtered)`; trendData = Object.entries(agg.allTimeTrend).sort((a, b) => b[1].q - a[1].q).slice(0, 10); } 
+            // PERBAIKAN: Jika lebih dari 1 tahun spesifik dipilih, gunakan agregasi per Bulan-Tahun (allTimeTrend) diurutkan kronologis,
+            // supaya data antar tahun (mis. Jan-2024 vs Jan-2025) TIDAK tergabung jadi satu bar seperti sebelumnya.
+            else if (cYear.length > 1) { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Monthly Sales Trend (${cYear.length} Tahun Dipilih)`; trendData = Object.entries(agg.allTimeTrend).sort((a, b) => trendLabelSortKey(a[0]) - trendLabelSortKey(b[0])); }
             else if (cMonth.includes('ALL')) { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Monthly Sales Trend (Filtered)`; trendData = monthNames.filter(m => agg.monthlyTrend[m]).map(m => [m, agg.monthlyTrend[m]]); } 
             else { titleEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> Top 10 Daily Sales Trend (Filtered)`; trendData = Object.entries(agg.timeline).sort((a, b) => b[1].q - a[1].q).slice(0, 10).sort((a, b) => a[0].localeCompare(b[0])); }
 
