@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -266,15 +267,16 @@
                 </div>
         
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="chartsArea" style="display:none;">
+                    <div class="lg:col-span-2 flex justify-end -mb-4"><button type="button" onclick="exportSalesExcel('all')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"><i class="fas fa-file-excel"></i> Download Laporan Lengkap (Excel)</button></div>
                     <div id="marketShareCard" class="glass-card p-8"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Market Share Contribution</h3><div style="height: 350px;"><canvas id="pieChart"></canvas></div></div>
                     <div id="sourceSection" class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] hover:border-indigo-300" onclick="handleCardClick(event, 'source')">
-                        <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Sales Source Ranking</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Detail</span></div>
+                        <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Sales Source Ranking</h3><div class="flex items-center gap-2"><button type="button" onclick="event.stopPropagation(); exportSalesExcel('source')" title="Download Excel" class="text-[10px] bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors shadow-sm flex items-center gap-1.5"><i class="fas fa-file-excel"></i> Excel</button><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Detail</span></div></div>
                         <div class="grid grid-cols-2 gap-4 mb-6 pointer-events-none"><div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100"><p class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Total Source Revenue</p><p id="sourceTotalRev" class="text-lg font-extrabold text-indigo-600">Rp 0</p></div><div class="bg-slate-50 p-4 rounded-2xl border border-slate-100"><p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Source Qty</p><p id="sourceTotalQty" class="text-lg font-extrabold text-slate-800">0 <span class="text-xs font-normal">pcs</span></p></div></div>
                         <div style="height: 350px;"><canvas id="sourceChart"></canvas></div>
                     </div>
-                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'qty')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Top 5 Baju (High Demand)</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div><div style="height: 350px;"><canvas id="qtyChart"></canvas></div></div>
-                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'rev')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Top 5 Baju (High Revenue)</h3><span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div><div style="height: 350px;"><canvas id="revChart"></canvas></div></div>
-                    <div id="collectionSection" class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.3)] hover:border-pink-300" onclick="handleCardClick(event, 'collection')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Top 5 Koleksi</h3><span class="text-[10px] bg-pink-50 text-pink-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-pink-600 group-hover:text-white transition-colors shadow-sm">Detail Varian</span></div><div style="height: 350px;"><canvas id="collectionChart"></canvas></div></div>
+                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'qty')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Top 5 Baju (High Demand)</h3><div class="flex items-center gap-2"><button type="button" onclick="event.stopPropagation(); exportSalesExcel('qty')" title="Download Excel" class="text-[10px] bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors shadow-sm flex items-center gap-1.5"><i class="fas fa-file-excel"></i> Excel</button><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div></div><div style="height: 350px;"><canvas id="qtyChart"></canvas></div></div>
+                    <div class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] hover:border-emerald-300" onclick="handleCardClick(event, 'rev')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Top 5 Baju (High Revenue)</h3><div class="flex items-center gap-2"><button type="button" onclick="event.stopPropagation(); exportSalesExcel('rev')" title="Download Excel" class="text-[10px] bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors shadow-sm flex items-center gap-1.5"><i class="fas fa-file-excel"></i> Excel</button><span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">Lihat Top 10</span></div></div><div style="height: 350px;"><canvas id="revChart"></canvas></div></div>
+                    <div id="collectionSection" class="glass-card cursor-pointer p-8 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.3)] hover:border-pink-300" onclick="handleCardClick(event, 'collection')"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink-500"></span> Top 5 Koleksi</h3><div class="flex items-center gap-2"><button type="button" onclick="event.stopPropagation(); exportSalesExcel('collection')" title="Download Excel" class="text-[10px] bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors shadow-sm flex items-center gap-1.5"><i class="fas fa-file-excel"></i> Excel</button><span class="text-[10px] bg-pink-50 text-pink-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-pink-600 group-hover:text-white transition-colors shadow-sm">Detail Varian</span></div></div><div style="height: 350px;"><canvas id="collectionChart"></canvas></div></div>
                     <div id="customerSection" class="glass-card cursor-pointer p-8 lg:col-span-1 group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(245,158,11,0.3)] hover:border-orange-300" onclick="handleCardClick(event, 'customer')" style="display: none;">
                         <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-[0.3em] flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Top 5 Mitra City</h3><span class="text-[10px] bg-orange-50 text-orange-600 font-bold px-3 py-1.5 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors shadow-sm">Lihat Semua</span></div>
                         <div style="height: 350px;"><canvas id="customerChart"></canvas></div>
@@ -1790,6 +1792,190 @@
             salesCharts.trend = new Chart(document.getElementById('trendChart'), { type: 'bar', data: { labels: trendData.map(x => x[0]), datasets: [ { label: 'Qty', data: trendData.map(x => x[1].q), backgroundColor: 'rgba(99, 102, 241, 0.1)', borderColor: '#6366f1', borderWidth: 2, borderRadius: 6, yAxisID: 'y', datalabels: { display: true, align: 'end', anchor: 'end', offset: -5, backgroundColor: '#fff', borderColor: '#6366f1', borderWidth: 1.5, borderRadius: 6, padding: 6, color: '#6366f1', font: { weight: 'bold', size: 10 }, formatter: v => v }, clip: false }, { label: 'Rev', data: trendData.map(x => x[1].r), type: 'line', borderColor: '#ec4899', borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#ec4899', pointRadius: 5, yAxisID: 'y1', tension: 0.4, datalabels: { display: false } } ] }, options: { maintainAspectRatio: false, layout: { padding: { top: 40, left: 10, right: 10, bottom: 0 } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true } }, tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#1e293b', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, callbacks: { label: (ctx) => ctx.datasetIndex === 1 ? `Revenue: ${formatRupiah(ctx.raw)}` : `Terjual: ${ctx.raw} pcs` } } }, scales: { x: { grid: { display: false, drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8' } }, y: { display: false, grid: { display: false } }, y1: { display: false, grid: { display: false } } } } });
         }
         
+        // ===== EXPORT EXCEL RAPI - SALES DASHBOARD (ExcelJS) =====
+        const _xlRp = '"Rp" #,##0', _xlInt = '#,##0', _xlPct = '0.0%';
+        const _xlSum = (rs, f) => rs.reduce((a, o) => a + (f(o) || 0), 0);
+        const _xlProdName = (r) => { let n = r['Nama Baju']; if (r.Periode && String(r.Periode).toLowerCase().includes('ramadhan')) n = extractRamadhanName(r.Variant); return String(n || 'N/A'); };
+        function _xlFilterInfo() {
+            const j = (a) => Array.isArray(a) ? (a.includes('ALL') ? 'Semua' : a.join(', ')) : (a === 'ALL' ? 'Semua' : a);
+            const cut = (s) => s.length > 160 ? s.slice(0, 157) + '...' : s;
+            const og = (document.getElementById('toggleOngkir') && document.getElementById('toggleOngkir').checked) ? 'Termasuk Ongkir' : 'Tanpa Ongkir';
+            return [
+                cut(`Brand: ${j(cBrand)}   |   Periode: ${j(cPeriode)}   |   Koleksi: ${j(cCollection)}`),
+                cut(`Source: ${j(cSource)}   |   Sales Tag: ${j(cBazaar)}   |   Tahun: ${j(cYear)}   |   Bulan: ${j(cMonth)}   |   ${og}`),
+                `Dibuat: ${new Date().toLocaleString('id-ID')}`
+            ];
+        }
+        function _xlAgg(rows, keyFn) {
+            const m = {};
+            rows.forEach(r => {
+                const k = keyFn(r);
+                if (!m[k]) m[k] = { name: k, q: 0, r: 0, brands: new Set(), cols: new Set() };
+                const o = m[k];
+                o.q += parseInt(r['Qty Terjual']) || 0; o.r += parseFloat(r.Revenue) || 0;
+                if (r.Brand) o.brands.add(r.Brand); if (r.Koleksi) o.cols.add(r.Koleksi);
+            });
+            return Object.values(m);
+        }
+        // columns: [{h, w, t:'rank'|'text'|'int'|'rp'|'pct', v:(o,i)=>value, tot:(rows)=>value}]
+        function _xlAddSheet(wb, opt) {
+            const { name, title, columns, rows, highlightTop = 0, fillFn = null, totalRow = true } = opt;
+            const nCols = columns.length, thin = { style: 'thin', color: { argb: 'FFE2E8F0' } };
+            const ws = wb.addWorksheet(name.slice(0, 31), { views: [{ showGridLines: false }] });
+            columns.forEach((c, i) => {
+                let w = c.w;
+                if (c.t === 'text') { const mx = rows.reduce((a, o, idx) => Math.max(a, String(c.v(o, idx) ?? '').length), 0); w = Math.min(Math.max(c.w, mx + 3), 60); }
+                ws.getColumn(i + 1).width = w;
+            });
+            ws.mergeCells(1, 1, 1, nCols);
+            const t = ws.getCell(1, 1); t.value = title;
+            t.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } }; t.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+            t.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 }; ws.getRow(1).height = 30;
+            const info = _xlFilterInfo();
+            info.forEach((txt, i) => {
+                ws.mergeCells(2 + i, 1, 2 + i, nCols);
+                const c = ws.getCell(2 + i, 1); c.value = txt;
+                c.font = { italic: true, size: 9, color: { argb: 'FF64748B' } }; c.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+                ws.getRow(2 + i).height = 15;
+            });
+            const hr = info.length + 3;
+            const hRow = ws.getRow(hr); hRow.height = 28;
+            columns.forEach((c, i) => {
+                const cell = hRow.getCell(i + 1); cell.value = c.h;
+                cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF312E81' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = { top: thin, bottom: thin, left: thin, right: thin };
+            });
+            if (!rows.length) {
+                ws.mergeCells(hr + 1, 1, hr + 1, nCols);
+                const c = ws.getCell(hr + 1, 1); c.value = 'Tidak ada data untuk ditampilkan';
+                c.font = { italic: true, color: { argb: 'FF94A3B8' } }; c.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(hr + 1).height = 24;
+            }
+            rows.forEach((o, idx) => {
+                const row = ws.getRow(hr + 1 + idx); row.height = 20;
+                let fill = idx % 2 === 0 ? 'FFFFFFFF' : 'FFF8FAFC';
+                if (highlightTop && idx < highlightTop) fill = 'FFEEF2FF';
+                if (fillFn) fill = fillFn(o, idx) || fill;
+                columns.forEach((c, i) => {
+                    const cell = row.getCell(i + 1); cell.value = c.v(o, idx);
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fill } };
+                    cell.border = { top: thin, bottom: thin, left: thin, right: thin };
+                    cell.font = { size: 10, bold: c.t === 'rank' || (highlightTop && idx < highlightTop && c.t === 'text' && i === 1), color: { argb: 'FF1E293B' } };
+                    if (c.t === 'rank') cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    else if (c.t === 'text') cell.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+                    else { cell.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 }; cell.numFmt = c.t === 'rp' ? _xlRp : c.t === 'pct' ? _xlPct : _xlInt; }
+                });
+            });
+            if (totalRow && rows.length) {
+                const tr = ws.getRow(hr + 1 + rows.length); tr.height = 24;
+                const medium = { style: 'medium', color: { argb: 'FF4F46E5' } };
+                columns.forEach((c, i) => {
+                    const cell = tr.getCell(i + 1);
+                    cell.value = i === 0 ? 'TOTAL' : (c.tot ? c.tot(rows) : '');
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E7FF' } };
+                    cell.border = { top: medium, bottom: thin, left: thin, right: thin };
+                    cell.font = { bold: true, size: 10, color: { argb: 'FF312E81' } };
+                    if (i === 0) cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    else if (c.t === 'text') cell.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+                    else { cell.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 }; cell.numFmt = c.t === 'rp' ? _xlRp : c.t === 'pct' ? _xlPct : _xlInt; }
+                });
+            }
+            ws.views = [{ state: 'frozen', ySplit: hr, showGridLines: false }];
+            if (rows.length > 5) ws.autoFilter = { from: { row: hr, column: 1 }, to: { row: hr, column: nCols } };
+            ws.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 };
+            return ws;
+        }
+        function _xlBuildWorkbook(type) {
+            const data = currentSalesFilteredData, wb = new ExcelJS.Workbook();
+            wb.creator = 'Aplikasi ZSSHI'; wb.created = new Date();
+            const totQ = _xlSum(data, r => parseInt(r['Qty Terjual'])), totR = _xlSum(data, r => parseFloat(r.Revenue));
+            const pctQ = o => totQ ? o.q / totQ : 0, pctR = o => totR ? o.r / totR : 0;
+            const common = {
+                rank: { h: 'Rank', w: 8, t: 'rank', v: (o, i) => i + 1 },
+                qty: { h: 'Qty Terjual (pcs)', w: 17, t: 'int', v: o => o.q, tot: rs => _xlSum(rs, o => o.q) },
+                rev: { h: 'Revenue (Rp)', w: 22, t: 'rp', v: o => o.r, tot: rs => _xlSum(rs, o => o.r) },
+                pq: { h: '% dari Total Qty', w: 16, t: 'pct', v: pctQ, tot: rs => _xlSum(rs, pctQ) },
+                pr: { h: '% dari Total Revenue', w: 19, t: 'pct', v: pctR, tot: rs => _xlSum(rs, pctR) },
+                avg: { h: 'Harga Rata-rata (Rp)', w: 20, t: 'rp', v: o => o.q ? o.r / o.q : 0, tot: rs => { const q = _xlSum(rs, o => o.q); return q ? _xlSum(rs, o => o.r) / q : 0; } }
+            };
+            const joined = (set) => [...set].join(', ');
+            const prodCols = [common.rank, { h: 'Nama Baju', w: 32, t: 'text', v: o => o.name }, { h: 'Brand', w: 14, t: 'text', v: o => joined(o.brands) }, { h: 'Koleksi', w: 24, t: 'text', v: o => joined(o.cols) }, common.qty, common.rev, common.pq, common.pr, common.avg];
+            const prods = _xlAgg(data, _xlProdName);
+            const addProducts = (sortKey, label, shortName) => {
+                const sorted = [...prods].sort((a, b) => b[sortKey] - a[sortKey] || b.r - a.r);
+                _xlAddSheet(wb, { name: `Top 5 ${shortName}`, title: `Top 5 Baju - ${label}`, columns: prodCols, rows: sorted.slice(0, 5) });
+                _xlAddSheet(wb, { name: `Semua Produk - ${shortName}`, title: `Ranking Semua Baju - ${label} (${sorted.length} produk)`, columns: prodCols, rows: sorted, highlightTop: 5 });
+            };
+            const addCollections = () => {
+                const cols = _xlAgg(data, r => String(r.Koleksi || 'N/A')).sort((a, b) => b.q - a.q || b.r - a.r);
+                const cCols = [common.rank, { h: 'Koleksi', w: 28, t: 'text', v: o => o.name }, { h: 'Brand', w: 14, t: 'text', v: o => joined(o.brands) }, common.qty, common.rev, common.pq, common.pr, common.avg];
+                _xlAddSheet(wb, { name: 'Top 5 Koleksi', title: 'Top 5 Koleksi (Berdasarkan Qty Terjual)', columns: cCols, rows: cols.slice(0, 5) });
+                _xlAddSheet(wb, { name: 'Semua Koleksi', title: `Ranking Semua Koleksi (${cols.length} koleksi)`, columns: cCols, rows: cols, highlightTop: 5 });
+                if (salesDetailReady) {
+                    const m = {};
+                    data.forEach(r => {
+                        const kol = String(r.Koleksi || 'N/A'), nm = _xlProdName(r), vr = (r.Variant && r.Variant !== '-') ? String(r.Variant) : 'All Size', k = kol + '||' + nm + '||' + vr;
+                        if (!m[k]) m[k] = { kol, nm, vr, q: 0, r: 0 };
+                        m[k].q += parseInt(r['Qty Terjual']) || 0; m[k].r += parseFloat(r.Revenue) || 0;
+                    });
+                    const order = {}; cols.forEach((c, i) => order[c.name] = i);
+                    const vrows = Object.values(m).sort((a, b) => (order[a.kol] - order[b.kol]) || b.q - a.q);
+                    const kolTot = {}; vrows.forEach(o => kolTot[o.kol] = (kolTot[o.kol] || 0) + o.r);
+                    _xlAddSheet(wb, {
+                        name: 'Detail Varian Koleksi', title: `Detail Penjualan Varian per Koleksi (${vrows.length} varian)`,
+                        columns: [
+                            { h: 'No', w: 8, t: 'rank', v: (o, i) => i + 1 }, { h: 'Koleksi', w: 26, t: 'text', v: o => o.kol }, { h: 'Nama Baju', w: 32, t: 'text', v: o => o.nm }, { h: 'Varian', w: 18, t: 'text', v: o => o.vr },
+                            { h: 'Qty Terjual (pcs)', w: 17, t: 'int', v: o => o.q, tot: rs => _xlSum(rs, o => o.q) }, { h: 'Revenue (Rp)', w: 22, t: 'rp', v: o => o.r, tot: rs => _xlSum(rs, o => o.r) },
+                            { h: '% dari Revenue Koleksi', w: 21, t: 'pct', v: o => kolTot[o.kol] ? o.r / kolTot[o.kol] : 0 }
+                        ],
+                        rows: vrows, fillFn: (o) => (order[o.kol] % 2 === 0) ? 'FFFFFFFF' : 'FFF5F3FF'
+                    });
+                }
+            };
+            const addSources = () => {
+                const srcs = _xlAgg(data, r => String(r.Source || 'N/A')).sort((a, b) => b.r - a.r);
+                _xlAddSheet(wb, { name: 'Sales Source Ranking', title: 'Sales Source Ranking (Berdasarkan Revenue)', columns: [common.rank, { h: 'Channel Sales', w: 24, t: 'text', v: o => o.name }, common.qty, common.rev, common.pq, common.pr, common.avg], rows: srcs });
+                if (salesDetailReady) {
+                    const by = {};
+                    data.forEach(r => { const s = String(r.Source || 'N/A'), n = _xlProdName(r); (by[s] = by[s] || {}); (by[s][n] = by[s][n] || { name: n, q: 0, r: 0 }); by[s][n].q += parseInt(r['Qty Terjual']) || 0; by[s][n].r += parseFloat(r.Revenue) || 0; });
+                    const flat = [], sIdx = {};
+                    srcs.forEach((s, si) => {
+                        sIdx[s.name] = si;
+                        Object.values(by[s.name] || {}).sort((a, b) => b.r - a.r).slice(0, 5).forEach((p, i) => flat.push({ src: s.name, rank: i + 1, name: p.name, q: p.q, r: p.r, pct: s.r ? p.r / s.r : 0 }));
+                    });
+                    _xlAddSheet(wb, {
+                        name: 'Top 5 Baju per Channel', title: 'Top 5 Baju per Channel Sales (Berdasarkan Revenue)',
+                        columns: [
+                            { h: 'Channel Sales', w: 20, t: 'text', v: o => o.src }, { h: 'Rank', w: 8, t: 'rank', v: o => o.rank }, { h: 'Nama Baju', w: 32, t: 'text', v: o => o.name },
+                            { h: 'Qty Terjual (pcs)', w: 17, t: 'int', v: o => o.q }, { h: 'Revenue (Rp)', w: 22, t: 'rp', v: o => o.r }, { h: '% dari Revenue Channel', w: 22, t: 'pct', v: o => o.pct }
+                        ],
+                        rows: flat, totalRow: false, fillFn: (o) => (sIdx[o.src] % 2 === 0) ? 'FFFFFFFF' : 'FFF5F3FF'
+                    });
+                }
+            };
+            if (type === 'qty') addProducts('q', 'High Demand (Qty Terjual)', 'High Demand');
+            else if (type === 'rev') addProducts('r', 'High Revenue', 'High Revenue');
+            else if (type === 'collection') addCollections();
+            else if (type === 'source') addSources();
+            else { addSources(); addProducts('q', 'High Demand (Qty Terjual)', 'High Demand'); addProducts('r', 'High Revenue', 'High Revenue'); addCollections(); }
+            return wb;
+        }
+        async function exportSalesExcel(type) {
+            if (typeof ExcelJS === 'undefined') { alert('Library Excel belum termuat. Periksa koneksi internet lalu muat ulang halaman.'); return; }
+            if (!currentSalesFilteredData || currentSalesFilteredData.length === 0) { alert('Tidak ada data untuk diexport. Cek filter Sales Dashboard.'); return; }
+            if (['qty', 'rev', 'all'].includes(type) && !requireDetailReady()) return;
+            try {
+                const wb = _xlBuildWorkbook(type);
+                const names = { source: 'Sales_Source_Ranking', qty: 'Top5_Baju_High_Demand', rev: 'Top5_Baju_High_Revenue', collection: 'Top5_Koleksi', all: 'Laporan_Sales_Dashboard' };
+                const buf = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob), a = document.createElement('a');
+                a.href = url; a.download = `${names[type] || 'Sales'}_${new Date().toISOString().slice(0, 10)}.xlsx`; a.style.display = 'none';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(() => URL.revokeObjectURL(url), 3000);
+            } catch (e) { console.error('Export Excel error:', e); alert('Gagal membuat file Excel: ' + e.message); }
+        }
+
         let currentSalesModalMode = '';
         function openSalesModal(type, specificClicked = null) {
             currentSalesModalMode = type; document.getElementById('salesDetailModal').classList.remove('hidden');
